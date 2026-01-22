@@ -153,8 +153,43 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.success(order, "Order cancelled successfully"));
     }
     
+    /**
+     * Get order tracking timeline
+     */
+    @GetMapping("/{orderId}/tracking")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @Operation(summary = "Get order tracking", description = "Get detailed order tracking timeline")
+    public ResponseEntity<ApiResponse<java.util.List<com.fiinx.order.application.dto.OrderTimelineResponse>>> getOrderTracking(
+            @PathVariable UUID orderId) {
+        return ResponseEntity.ok(ApiResponse.success(orderService.getOrderTimeline(orderId)));
+    }
+
+    /**
+     * Get order invoice (Mock)
+     */
+    @GetMapping("/{orderId}/invoice")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @Operation(summary = "Get order invoice", description = "Generate and return order invoice (Simulated PDF URL)")
+    public ResponseEntity<ApiResponse<String>> getOrderInvoice(@PathVariable UUID orderId) {
+        // Mock generation
+        String mockInvoiceUrl = "https://fiinx.com/invoices/INV-" + orderId + ".pdf";
+        return ResponseEntity.ok(ApiResponse.success(mockInvoiceUrl, "Invoice generated"));
+    }
+
     // ==================== Admin Endpoints ====================
     
+    /**
+     * Get all orders (Admin only)
+     */
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "List all orders (Admin)", description = "Get paginated list of all orders with filters")
+    public ResponseEntity<ApiResponse<PageResponse<OrderResponse>>> getAllOrders(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        // For simplicity, we use the existing find all but could add complex filters
+        return ResponseEntity.ok(ApiResponse.success(orderService.getAllOrders(pageable)));
+    }
+
     /**
      * Get orders by customer ID (Admin only)
      */

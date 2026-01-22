@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: cart-service
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cart_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+  
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: cart-service
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/fiinx
+
+server:
+  port: 8084
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    root: INFO
+    com.fiinx.cart: DEBUG
+
+redisson:
+  single-server-config:
+    address: redis://localhost:6379
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+application:
+  cache:
+    cart-ttl: 86400  # 24 hours
+  product-service:
+    url: http://localhost:8083
+  promotion-service:
+    url: http://localhost:8085

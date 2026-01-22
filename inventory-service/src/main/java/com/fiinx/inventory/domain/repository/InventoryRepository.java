@@ -14,7 +14,7 @@ import java.util.UUID;
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
     
-    Optional<Inventory> findByProductId(String productId);
+    Optional<Inventory> findByProductId(java.util.UUID productId);
     
     Optional<Inventory> findBySku(String sku);
     
@@ -23,5 +23,5 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT i FROM Inventory i WHERE i.productId = :productId")
-    Optional<Inventory> findByProductIdForUpdate(@Param("productId") String productId);
+    Optional<Inventory> findByProductIdForUpdate(@Param("productId") java.util.UUID productId);
 }

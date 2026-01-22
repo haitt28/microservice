@@ -193,6 +193,28 @@ public class IdentityService {
         userResource.roles().realmLevel().add(Collections.singletonList(role));
     }
 
+    /**
+     * Lock user account
+     */
+    public void lockUser(String userId) {
+        log.info("Locking user account: {}", userId);
+        UserResource userResource = adminKeycloak.realm(realm).users().get(userId);
+        UserRepresentation user = userResource.toRepresentation();
+        user.setEnabled(false);
+        userResource.update(user);
+    }
+
+    /**
+     * Unlock user account
+     */
+    public void unlockUser(String userId) {
+        log.info("Unlocking user account: {}", userId);
+        UserResource userResource = adminKeycloak.realm(realm).users().get(userId);
+        UserRepresentation user = userResource.toRepresentation();
+        user.setEnabled(true);
+        userResource.update(user);
+    }
+
     // Các phương thức bổ trợ (Helper methods)
     private void assignDefaultRole(String userId, String roleName) {
         try {

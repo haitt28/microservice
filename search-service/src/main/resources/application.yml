@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: search-service
+  
+  elasticsearch:
+    uris: http://localhost:9200
+  
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: search-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+    properties:
+      spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+      spring.json.trusted.packages: "com.fiinx.common.event.*,java.util,java.lang"
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/fiinx
+
+server:
+  port: 8089
+
+logging:
+  level:
+    com.fiinx.search: DEBUG

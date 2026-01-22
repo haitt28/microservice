@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: chat-service
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/chat_db
+    username: postgres
+    password: postgres
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  
+  flyway:
+    enabled: true
+  
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/fiinx
+
+server:
+  port: 8092
+
+logging:
+  level:
+    com.fiinx.chat: DEBUG
+    org.springframework.messaging: TRACE
+    org.springframework.web.socket: TRACE

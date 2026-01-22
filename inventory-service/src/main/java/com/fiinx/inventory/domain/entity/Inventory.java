@@ -19,8 +19,8 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 public class Inventory extends BaseEntity {
     
-    @Column(name = "product_id", unique = true, nullable = false, length = 100)
-    private String productId;
+    @Column(name = "product_id", unique = true, nullable = false)
+    private java.util.UUID productId;
     
     @Column(name = "sku", unique = true, nullable = false, length = 100)
     private String sku;

@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: media-service
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/media_db
+    username: postgres
+    password: postgres
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  
+  flyway:
+    enabled: true
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/fiinx
+
+server:
+  port: 8088
+
+logging:
+  level:
+    com.fiinx.media: DEBUG
+
+# Mock storage config
+storage:
+  type: local # local, s3, minio
+  local:
+    path: ./uploads
+  cdn:
+    url-prefix: http://localhost:8088/api/v1/media/view/

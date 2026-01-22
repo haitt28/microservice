@@ -35,6 +35,66 @@ public class PaymentService {
     
     private static final String IDEMPOTENCY_PREFIX = "payment:idempotency:";
     private static final Duration IDEMPOTENCY_TTL = Duration.ofHours(24);
+
+    /**
+     * Initiate payment (Multi-gateway support)
+     */
+    @Transactional
+    public com.fiinx.payment.application.dto.PaymentResponse initiatePayment(com.fiinx.payment.application.dto.PaymentRequest request) {
+        log.info("Initiating payment for order: {} via {}", request.getOrderId(), request.getPaymentMethod());
+
+        Payment payment = Payment.builder()
+                .orderId(request.getOrderId())
+                .customerId(request.getCustomerId())
+                .amount(request.getAmount())
+                .currency(request.getCurrency())
+                .paymentMethod(request.getPaymentMethod())
+                .status(PaymentStatus.PENDING)
+                .createdAt(Instant.now())
+                .build();
+
+        payment = paymentRepository.save(payment);
+
+        String mockUrl = switch (request.getPaymentMethod().toUpperCase()) {
+            case "VNPAY" -> "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?orderId=" + payment.getId();
+            case "MOMO" -> "https://test-payment.momo.vn/pay/orderId=" + payment.getId();
+            case "ZALOPAY" -> "https://sb-openapi.zalopay.vn/v2/create?orderId=" + payment.getId();
+            default -> "https://fiinx.com/payment/mock?id=" + payment.getId();
+        };
+
+        return com.fiinx.payment.application.dto.PaymentResponse.builder()
+                .paymentId(payment.getId())
+                .orderId(payment.getOrderId())
+                .paymentUrl(mockUrl)
+                .status("PENDING")
+                .build();
+    }
+
+    /**
+     * Process gateway webhook (IPN)
+     */
+    @Transactional
+    public void processWebhook(UUID paymentId, boolean success, String transactionId) {
+        log.info("Processing webhook for payment: {}, success: {}", paymentId, success);
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new RuntimeException("Payment not found"));
+
+        if (payment.getStatus() != PaymentStatus.PENDING) {
+            log.warn("Payment {} already processed with status {}", paymentId, payment.getStatus());
+            return;
+        }
+
+        payment.setStatus(success ? PaymentStatus.COMPLETED : PaymentStatus.FAILED);
+        payment.setTransactionId(transactionId);
+        payment.setProcessedAt(Instant.now());
+        
+        if (!success) {
+            payment.setFailureReason("Gateway reported failure");
+        }
+
+        paymentRepository.save(payment);
+        log.info("Payment updated to {} after webhook", payment.getStatus());
+    }
     
     /**
      * Xử lý thanh toán với cơ chế kiểm tra tính Idempotency

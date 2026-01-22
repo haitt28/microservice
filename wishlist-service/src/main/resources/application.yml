@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: wishlist-service
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/wishlist_db
+    username: postgres
+    password: postgres
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  
+  flyway:
+    enabled: true
+  
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/fiinx
+
+server:
+  port: 8091
+
+logging:
+  level:
+    com.fiinx.wishlist: DEBUG

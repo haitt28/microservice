@@ -78,4 +78,20 @@ public class IdentityController {
         identityService.grantRole(request);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/admin/users/{userId}/lock")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Lock user", description = "Disable user account in Keycloak")
+    public ResponseEntity<Void> lockUser(@PathVariable String userId) {
+        identityService.lockUser(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/admin/users/{userId}/unlock")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Unlock user", description = "Enable user account in Keycloak")
+    public ResponseEntity<Void> unlockUser(@PathVariable String userId) {
+        identityService.unlockUser(userId);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -39,6 +39,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final OrderSagaOrchestrator sagaOrchestrator;
+    private final com.fiinx.order.domain.repository.OrderTimelineRepository orderTimelineRepository;
     
     /**
      * Tạo đơn hàng mới với cơ chế Distributed Lock để chống việc gửi trùng lặp.
@@ -59,6 +60,13 @@ public class OrderService {
         // Save order
         order = orderRepository.save(order);
         log.info("Order created: {}", order.getOrderNumber());
+        
+        // Record timeline
+        orderTimelineRepository.save(com.fiinx.order.domain.entity.OrderTimeline.builder()
+                .orderId(order.getId())
+                .status(OrderStatus.CREATED.name())
+                .note("Order placed successfully")
+                .build());
         
         // Start saga asynchronously
         sagaOrchestrator.startOrderSaga(order);
@@ -100,6 +108,16 @@ public class OrderService {
     }
     
     /**
+     * Get all orders for admin
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<OrderResponse> getAllOrders(Pageable pageable) {
+        Page<Order> orders = orderRepository.findAll(pageable);
+        Page<OrderResponse> responsePage = orders.map(orderMapper::toResponse);
+        return PageResponse.from(responsePage);
+    }
+    
+    /**
      * Hủy đơn hàng (Nếu trạng thái hiện tại cho phép)
      */
     @DistributedLock(key = "'order:cancel:' + #orderNumber", leaseTime = 30)
@@ -118,10 +136,33 @@ public class OrderService {
         }
         
         order.markAsCancelled(reason);
-        orderRepository.save(order);
+        order = orderRepository.save(order);
+        
+        // Record timeline
+        orderTimelineRepository.save(com.fiinx.order.domain.entity.OrderTimeline.builder()
+                .orderId(order.getId())
+                .status(OrderStatus.CANCELLED.name())
+                .note("Order cancelled: " + reason)
+                .build());
         
         log.info("Order cancelled: {}", orderNumber);
         return orderMapper.toResponse(order);
+    }
+
+    /**
+     * Get order tracking timeline
+     */
+    @Transactional(readOnly = true)
+    public java.util.List<com.fiinx.order.application.dto.OrderTimelineResponse> getOrderTimeline(UUID orderId) {
+        return orderTimelineRepository.findByOrderIdOrderByCreatedAtDesc(orderId).stream()
+                .map(t -> com.fiinx.order.application.dto.OrderTimelineResponse.builder()
+                        .id(t.getId())
+                        .orderId(t.getOrderId())
+                        .status(t.getStatus())
+                        .note(t.getNote())
+                        .createdAt(t.getCreatedAt())
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
     }
     
     // ==================== Private Helpers ====================
