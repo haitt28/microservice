@@ -1,0 +1,276 @@
+{
+  "realm": "microservice-realm",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": false,
+  "verifyEmail": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "loginTheme": "keycloak",
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "passwordPolicy": "",
+  "roles": {
+    "realm": [
+      {
+        "name": "USER",
+        "description": "Regular user role",
+        "composite": false
+      },
+      {
+        "name": "ADMIN",
+        "description": "Administrator role",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "USER"
+          ]
+        }
+      },
+      {
+        "name": "MANAGER",
+        "description": "Manager role",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "USER"
+          ]
+        }
+      }
+    ],
+    "client": {
+      "order-service": [
+        {
+          "name": "order_create",
+          "description": "Can create orders"
+        },
+        {
+          "name": "order_read",
+          "description": "Can view orders"
+        },
+        {
+          "name": "order_update",
+          "description": "Can update orders"
+        },
+        {
+          "name": "order_delete",
+          "description": "Can delete orders"
+        },
+        {
+          "name": "order_cancel",
+          "description": "Can cancel orders"
+        }
+      ],
+      "inventory-service": [
+        {
+          "name": "inventory_read",
+          "description": "Can view inventory"
+        },
+        {
+          "name": "inventory_update",
+          "description": "Can update inventory"
+        }
+      ],
+      "payment-service": [
+        {
+          "name": "payment_process",
+          "description": "Can process payments"
+        },
+        {
+          "name": "payment_refund",
+          "description": "Can refund payments"
+        }
+      ]
+    }
+  },
+  "defaultRoles": [
+    "USER"
+  ],
+  "clients": [
+    {
+      "clientId": "frontend-app",
+      "name": "Frontend Application",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://localhost:4200/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://localhost:4200"
+      ],
+      "protocol": "openid-connect",
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    },
+    {
+      "clientId": "order-service",
+      "name": "Order Service",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "inventory-service",
+      "name": "Inventory Service",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "payment-service",
+      "name": "Payment Service",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "notification-service",
+      "name": "Notification Service",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect"
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Admin",
+      "lastName": "User",
+      "email": "admin@fiinx.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "ADMIN"
+      ],
+      "clientRoles": {
+        "order-service": [
+          "order_create",
+          "order_read",
+          "order_update",
+          "order_delete",
+          "order_cancel"
+        ],
+        "inventory-service": [
+          "inventory_read",
+          "inventory_update"
+        ],
+        "payment-service": [
+          "payment_process",
+          "payment_refund"
+        ]
+      },
+      "attributes": {
+        "department": [
+          "IT"
+        ],
+        "jobTitle": [
+          "System Administrator"
+        ]
+      }
+    },
+    {
+      "username": "manager1",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Manager",
+      "lastName": "One",
+      "email": "manager@fiinx.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "manager123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "MANAGER"
+      ],
+      "clientRoles": {
+        "order-service": [
+          "order_create",
+          "order_read",
+          "order_update",
+          "order_cancel"
+        ],
+        "inventory-service": [
+          "inventory_read"
+        ]
+      },
+      "attributes": {
+        "department": [
+          "Sales"
+        ],
+        "jobTitle": [
+          "Sales Manager"
+        ]
+      }
+    },
+    {
+      "username": "user1",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Test",
+      "lastName": "User",
+      "email": "user1@fiinx.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "user123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "USER"
+      ],
+      "clientRoles": {
+        "order-service": [
+          "order_create",
+          "order_read"
+        ]
+      },
+      "attributes": {
+        "department": [
+          "Customer"
+        ],
+        "jobTitle": [
+          "Customer"
+        ]
+      }
+    }
+  ],
+  "defaultDefaultClientScopes": [
+    "roles",
+    "profile",
+    "email",
+    "web-origins"
+  ],
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "en",
+    "vi"
+  ],
+  "defaultLocale": "en"
+}

@@ -1,0 +1,267 @@
+# ===================================================================
+# Kubernetes Deployment cho Order Service
+# ===================================================================
+# BEST PRACTICE #33: Production-ready K8s manifests
+# ===================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: microservice
+  labels:
+    app: order-service
+    version: v1
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8081"
+    spec:
+      serviceAccountName: order-service
+      
+      # Anti-affinity để spread pods across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: order-service
+                topologyKey: kubernetes.io/hostname
+      
+      containers:
+        - name: order-service
+          image: fiinx/order-service:1.0.0-SNAPSHOT
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8081
+              protocol: TCP
+          
+          # Environment variables from ConfigMap and Secret
+          envFrom:
+            - configMapRef:
+                name: order-service-config
+            - secretRef:
+                name: order-service-secret
+          
+          env:
+            - name: JAVA_OPTS
+              value: "-XX:+UseZGC -XX:+ZGenerational -XX:MaxRAMPercentage=75.0"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          
+          # Resource limits
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          
+          # Health probes
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8081
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+          
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          
+          # Volume mounts
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+      
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}
+      
+      # Graceful shutdown
+      terminationGracePeriodSeconds: 60
+
+---
+# ===================================================================
+# Service
+# ===================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: microservice
+  labels:
+    app: order-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+  selector:
+    app: order-service
+
+---
+# ===================================================================
+# ConfigMap
+# ===================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: order-service-config
+  namespace: microservice
+data:
+  SPRING_PROFILES_ACTIVE: "kubernetes"
+  SERVER_PORT: "8081"
+  EUREKA_URI: "http://service-discovery:8761/eureka"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  KEYCLOAK_ISSUER_URI: "http://keycloak:8080/realms/microservice-realm"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger-collector:4317"
+  OTEL_SERVICE_NAME: "order-service"
+
+---
+# ===================================================================
+# Secret (example - use external secret management in production)
+# ===================================================================
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: order-service-secret
+  namespace: microservice
+type: Opaque
+stringData:
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "orderdb"
+  DB_USERNAME: "postgres"
+  DB_PASSWORD: "postgres"
+  REDIS_PASSWORD: ""
+
+---
+# ===================================================================
+# ServiceAccount
+# ===================================================================
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: order-service
+  namespace: microservice
+
+---
+# ===================================================================
+# HorizontalPodAutoscaler
+# ===================================================================
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: order-service-hpa
+  namespace: microservice
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: order-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max
+
+---
+# ===================================================================
+# PodDisruptionBudget
+# ===================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: order-service-pdb
+  namespace: microservice
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: order-service

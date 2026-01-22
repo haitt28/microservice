@@ -1,0 +1,19 @@
+server:
+  port: 8083
+spring:
+  application:
+    name: payment-service
+  datasource:
+    # Senior Note: Sử dụng 127.0.0.1 để tránh lỗi phân giải localhost trên Windows
+    url: jdbc:postgresql://${DB_HOST:127.0.0.1}:5432/paymentdb
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate # Senior Note: Luôn dùng 'validate' ở môi trường Production
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  cloud:
+    config:
+      enabled: false

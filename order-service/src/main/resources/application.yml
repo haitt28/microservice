@@ -1,0 +1,198 @@
+# ===================================================================
+# BEST PRACTICE #29: Application Configuration
+# ===================================================================
+# Spring Boot 3.x Configuration với profiles
+# ===================================================================
+
+spring:
+  application:
+    name: order-service
+  # ==================== Database (Cấu hình Cơ sở dữ liệu) ====================
+  # Senior Note: Luôn dùng biến môi trường với mặc định (default value).
+  # Tôi đã đổi localhost thành 127.0.0.1 để tránh lỗi IPv6 trên Windows.
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:127.0.0.1}:${DB_PORT:5432}/${DB_NAME:orderdb}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: OrderServiceHikariPool
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+      leak-detection-threshold: 60000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        default_schema: public
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+    show-sql: false
+
+  # ==================== Flyway ====================
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  # ==================== Kafka ====================
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: order-service-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+    producer:
+      acks: all
+      retries: 3
+
+  # ==================== Redis (Caching & Rate Limiting) ====================
+  # Senior Note: Redis ở local không có pass, nên chúng ta không config password ở đây.
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+
+  # ==================== Security (Keycloak) ====================
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8080/realms/microservice-realm}
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:8080/realms/microservice-realm/protocol/openid-connect/certs}
+
+  # ==================== Virtual Threads (Java 21+) ====================
+  threads:
+    virtual:
+      enabled: true
+
+# ==================== Server ====================
+server:
+  port: 8081
+  shutdown: graceful
+  servlet:
+    context-path: /
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 10
+    accept-count: 100
+
+# ==================== Eureka Client ====================
+
+# ==================== Management / Actuator ====================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,env,loggers
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+  health:
+    circuitbreakers:
+      enabled: true
+    ratelimiters:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  tracing:
+    sampling:
+      probability: 1.0
+
+# ==================== OpenAPI ====================
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  show-actuator: true
+
+# ==================== Logging ====================
+logging:
+  level:
+    root: INFO
+    com.fiinx: DEBUG
+    org.springframework.kafka: WARN
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [${spring.application.name},%X{traceId:-},%X{spanId:-}] [%15.15t] %-40.40logger{39} : %m%n"
+
+# ==================== Resilience4j (Khả năng chịu lỗi) ====================
+# Senior Note: Đây là nơi bạn điều chỉnh các ngưỡng "ngắt mạch" (Circuit Breaker).
+# Nếu rate lỗi > 50%, service sẽ tự động chặn các request tiếp theo để bảo vệ hệ thống.
+resilience4j:
+  circuitbreaker:
+    instances:
+      inventoryService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 30s
+        failureRateThreshold: 50
+      paymentService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+  retry:
+    instances:
+      inventoryService:
+        maxAttempts: 3
+        waitDuration: 500ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+      paymentService:
+        maxAttempts: 3
+        waitDuration: 1s
+  timelimiter:
+    instances:
+      default:
+        timeoutDuration: 10s
+
+# ==================== Redisson ====================
+redisson:
+  single-server-config:
+    address: redis://${REDIS_HOST:127.0.0.1}:${REDIS_PORT:6379}
+    connection-pool-size: 64
+    connection-minimum-idle-size: 24
+    idle-connection-timeout: 10000
+    connect-timeout: 10000
+    timeout: 3000
+    retry-attempts: 3
+    retry-interval: 1500
+
+# ==================== Application Custom Properties ====================
+app:
+  kafka:
+    consumer-group-prefix: fiinx
+  redis:
+    cache:
+      default-ttl: 30m
+    lock:
+      default-wait-time: 3s
+      default-lease-time: 30s
