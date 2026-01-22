@@ -21,20 +21,20 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
 /**
- * BEST PRACTICE #22: Distributed Lock Aspect
+ * BEST PRACTICE #22: Aspect cho Khóa phân tán (Distributed Lock Aspect).
  * 
- * AOP aspect để implement @DistributedLock annotation
+ * Sử dụng AOP để triển khai logic cho annotation @DistributedLock.
  * 
- * Features:
- * - SpEL expression parsing cho dynamic keys
- * - Configurable wait/lease times
- * - Automatic lock release
- * - Fail-fast mode cho double-click prevention
+ * Các tính năng:
+ * - Parsing biểu thức SpEL để tạo dynamic keys.
+ * - Cấu hình được thời gian chờ (wait time) và thời gian thuê (lease time).
+ * - Tự động giải phóng (release) Lock.
+ * - Chế độ Fail-fast để chống lỗi double-click.
  */
 @Slf4j
 @Aspect
 @Component
-@Order(1)  // Run before @Transactional
+@Order(1)  // Chạy trước @Transactional
 @RequiredArgsConstructor
 public class DistributedLockAspect {
     
@@ -44,7 +44,7 @@ public class DistributedLockAspect {
     @Around("@annotation(distributedLock)")
     public Object around(ProceedingJoinPoint joinPoint, DistributedLock distributedLock) throws Throwable {
         
-        // Parse lock key from SpEL expression
+        // Parse lock key từ biểu thức SpEL
         String lockKey = buildLockKey(joinPoint, distributedLock);
         
         log.debug("Attempting to acquire lock: {}", lockKey);
@@ -53,7 +53,7 @@ public class DistributedLockAspect {
         boolean acquired = false;
         
         try {
-            // Try to acquire lock
+            // Thử chiếm (acquire) Lock
             acquired = lock.tryLock(
                 distributedLock.waitTime(),
                 distributedLock.leaseTime(),
@@ -67,11 +67,11 @@ public class DistributedLockAspect {
             
             log.debug("Lock acquired: {}", lockKey);
             
-            // Execute the method
+            // Thực thi phương thức gốc (business logic)
             return joinPoint.proceed();
             
         } finally {
-            // Release lock if we acquired it
+            // Giải phóng (release) Lock nếu đã chiếm thành công trước đó
             if (acquired && lock.isHeldByCurrentThread()) {
                 lock.unlock();
                 log.debug("Lock released: {}", lockKey);
@@ -80,16 +80,16 @@ public class DistributedLockAspect {
     }
     
     /**
-     * Build lock key from SpEL expression
+     * Tạo lock key từ biểu thức SpEL.
      */
     private String buildLockKey(ProceedingJoinPoint joinPoint, DistributedLock annotation) {
         String keyExpression = annotation.key();
         String prefix = annotation.prefix();
         
-        // Create evaluation context with method parameters
+        // Tạo evaluation context với các tham số của phương thức
         EvaluationContext context = createEvaluationContext(joinPoint);
         
-        // Parse SpEL expression
+        // Parse biểu thức SpEL
         String key = expressionParser.parseExpression(keyExpression)
             .getValue(context, String.class);
         
@@ -97,7 +97,7 @@ public class DistributedLockAspect {
     }
     
     /**
-     * Create SpEL evaluation context with method parameters
+     * Tạo SpEL evaluation context chứa các tham số của phương thức.
      */
     private EvaluationContext createEvaluationContext(ProceedingJoinPoint joinPoint) {
         StandardEvaluationContext context = new StandardEvaluationContext();
@@ -107,7 +107,7 @@ public class DistributedLockAspect {
         Parameter[] parameters = method.getParameters();
         Object[] args = joinPoint.getArgs();
         
-        // Add method parameters to context
+        // Thêm các tham số của phương thức vào context
         for (int i = 0; i < parameters.length; i++) {
             context.setVariable(parameters[i].getName(), args[i]);
         }

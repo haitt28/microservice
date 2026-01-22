@@ -77,7 +77,7 @@ public enum OrderStatus {
     COMPLETED {
         @Override
         public boolean canTransitionTo(OrderStatus newStatus) {
-            return false; // Terminal state
+            return false; // Trạng thái cuối cùng (Terminal state)
         }
     },
     
@@ -87,7 +87,7 @@ public enum OrderStatus {
     FAILED {
         @Override
         public boolean canTransitionTo(OrderStatus newStatus) {
-            return false; // Terminal state
+            return false; // Trạng thái cuối cùng (Terminal state)
         }
     },
     
@@ -97,7 +97,7 @@ public enum OrderStatus {
     CANCELLED {
         @Override
         public boolean canTransitionTo(OrderStatus newStatus) {
-            return false; // Terminal state
+            return false; // Trạng thái cuối cùng (Terminal state)
         }
     };
     

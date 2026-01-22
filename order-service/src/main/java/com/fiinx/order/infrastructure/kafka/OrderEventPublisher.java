@@ -21,12 +21,12 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * BEST PRACTICE #20: Kafka Event Publisher
+ * BEST PRACTICE #20: Thành phần phát tán sự kiện (Kafka Event Publisher).
  * 
- * - Centralized event publishing
- * - Correlation ID propagation via headers
- * - Proper error handling
- * - Async publishing with callbacks
+ * - Quản lý việc gửi sự kiện tập trung.
+ * - Truyền Correlation ID thông qua headers để phục vụ truy vết (tracing).
+ * - Xử lý lỗi chặt chẽ.
+ * - Gửi sự kiện không đồng bộ (Async) với các hàm callback xử lý kết quả.
  */
 @Slf4j
 @Component
@@ -39,21 +39,21 @@ public class OrderEventPublisher {
     private static final String EVENT_TYPE_HEADER = "X-Event-Type";
     
     /**
-     * Publish order created event
+     * Phát tán sự kiện đơn hàng đã được tạo (Order Created Event).
      */
     public void publishOrderCreated(OrderCreatedEvent event) {
         publish(KafkaProperties.TOPIC_ORDER_CREATED, event.getOrderId(), event, event.getCorrelationId());
     }
     
     /**
-     * Publish inventory reserve command
+     * Phát tán lệnh giữ hàng tồn kho (Inventory Reserve Command).
      */
     public void publishInventoryReserveCommand(InventoryReserveCommand command) {
         publish(KafkaProperties.TOPIC_INVENTORY_RESERVE, command.getOrderId(), command, command.getCorrelationId());
     }
     
     /**
-     * Publish inventory release command (compensation)
+     * Phát tán lệnh giải phóng hàng tồn kho (Inventory Release Command - Bước bồi hoàn).
      */
     public void publishInventoryReleaseCommand(String orderId, String reservationId, 
                                                 String reason, String correlationId) {
@@ -71,14 +71,14 @@ public class OrderEventPublisher {
     }
     
     /**
-     * Publish payment command
+     * Phát tán lệnh xử lý thanh toán (Payment Process Command).
      */
     public void publishPaymentCommand(PaymentProcessCommand command) {
         publish(KafkaProperties.TOPIC_PAYMENT_PROCESS, command.getOrderId(), command, command.getCorrelationId());
     }
     
     /**
-     * Publish payment refund command (compensation)
+     * Phát tán lệnh hoàn tiền (Payment Refund Command - Bước bồi hoàn).
      */
     public void publishPaymentRefundCommand(String orderId, String paymentId, 
                                             String reason, String correlationId) {
@@ -96,7 +96,7 @@ public class OrderEventPublisher {
     }
     
     /**
-     * Publish notification command
+     * Phát tán lệnh gửi thông báo (Send Notification Command).
      */
     public void publishNotificationCommand(SendNotificationCommand command) {
         publish(KafkaProperties.TOPIC_NOTIFICATION_SEND, command.getRecipientId(), 
@@ -108,7 +108,7 @@ public class OrderEventPublisher {
     private void publish(String topic, String key, Object event, String correlationId) {
         ProducerRecord<String, Object> record = new ProducerRecord<>(topic, key, event);
         
-        // Add headers for tracing
+        // Thêm headers để phục vụ việc truy vết (tracing)
         record.headers().add(new RecordHeader(
             CORRELATION_ID_HEADER, 
             correlationId != null ? correlationId.getBytes(StandardCharsets.UTF_8) : null
@@ -123,7 +123,7 @@ public class OrderEventPublisher {
         future.whenComplete((result, ex) -> {
             if (ex != null) {
                 log.error("Failed to publish event to topic {}: {}", topic, ex.getMessage(), ex);
-                // In production: consider saving to outbox table for retry
+                // Trong môi trường production: Cân nhắc lưu vào bảng Outbox để retry sau này.
             } else {
                 log.debug("Event published to topic {} partition {} offset {}", 
                     topic, 

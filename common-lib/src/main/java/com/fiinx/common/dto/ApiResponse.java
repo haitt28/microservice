@@ -24,23 +24,23 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)  // Không serialize null fields
-@Schema(description = "Standard API response wrapper")
+@Schema(description = "Lớp wrapper chuẩn cho phản hồi API (Unified API Response)")
 public class ApiResponse<T> {
     
-    @Schema(description = "Indicates if the request was successful")
+    @Schema(description = "Cho biết yêu cầu có thành công hay không")
     private boolean success;
     
-    @Schema(description = "Response data payload")
+    @Schema(description = "Dữ liệu phản hồi (payload)")
     private T data;
     
-    @Schema(description = "Error information if request failed")
+    @Schema(description = "Thông tin lỗi nếu yêu cầu thất bại")
     private ErrorInfo error;
     
-    @Schema(description = "Additional metadata")
+    @Schema(description = "Thông tin metadata bổ sung")
     private Meta meta;
     
     // ==================== Factory Methods ====================
-    // BEST PRACTICE: Static factory methods cho clean API
+    // BEST PRACTICE: Các static factory methods để tạo API sạch hơn (clean API)
     
     public static <T> ApiResponse<T> success(T data) {
         return ApiResponse.<T>builder()
@@ -90,19 +90,19 @@ public class ApiResponse<T> {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "Error details")
+    @Schema(description = "Chi tiết thông tin lỗi")
     public static class ErrorInfo {
         
-        @Schema(description = "Error code for programmatic handling", example = "ORDER_NOT_FOUND")
+        @Schema(description = "Mã lỗi để xử lý bằng code", example = "ORDER_NOT_FOUND")
         private String code;
         
-        @Schema(description = "Human-readable error message")
+        @Schema(description = "Thông báo lỗi thân thiện cho con người")
         private String message;
         
-        @Schema(description = "Correlation ID for tracing")
+        @Schema(description = "Trace ID phục vụ việc truy vết (tracing)")
         private String traceId;
         
-        @Schema(description = "Field-level validation errors")
+        @Schema(description = "Các lỗi validation cụ thể ở mức trường (field)")
         private List<FieldError> fieldErrors;
     }
     
@@ -110,16 +110,16 @@ public class ApiResponse<T> {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "Field validation error")
+    @Schema(description = "Lỗi validation của một trường dữ liệu")
     public static class FieldError {
         
-        @Schema(description = "Field name that has error", example = "email")
+        @Schema(description = "Tên trường gặp lỗi", example = "email")
         private String field;
         
-        @Schema(description = "Error message for this field", example = "must be a valid email")
+        @Schema(description = "Thông báo lỗi cho trường này", example = "must be a valid email")
         private String message;
         
-        @Schema(description = "Rejected value", example = "invalid-email")
+        @Schema(description = "Giá trị bị từ chối", example = "invalid-email")
         private Object rejectedValue;
     }
     
@@ -127,19 +127,19 @@ public class ApiResponse<T> {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "Response metadata")
+    @Schema(description = "Metadata của phản hồi")
     public static class Meta {
         
-        @Schema(description = "Response timestamp")
+        @Schema(description = "Thời điểm phản hồi")
         private Instant timestamp;
         
-        @Schema(description = "Optional success message")
+        @Schema(description = "Thông báo thành công tùy chọn")
         private String message;
         
-        @Schema(description = "API version")
+        @Schema(description = "Phiên bản API")
         private String version;
         
-        @Schema(description = "Request processing time in milliseconds")
+        @Schema(description = "Thời gian xử lý yêu cầu (ms)")
         private Long processingTimeMs;
     }
 }

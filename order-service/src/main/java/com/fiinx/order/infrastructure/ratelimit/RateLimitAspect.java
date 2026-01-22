@@ -26,16 +26,16 @@ import java.util.concurrent.TimeUnit;
 import org.redisson.client.codec.StringCodec;
 
 /**
- * BEST PRACTICE #23: Rate Limiting Aspect
+ * BEST PRACTICE #23: Aspect cho Giới hạn tần suất (Rate Limiting Aspect).
  * 
- * Sliding Window Rate Limiting với Redis.
+ * Triển khai Sliding Window Rate Limiting bằng Redis.
  * Giải thích cho Senior: Chúng ta dùng AOP để tách biệt logic Rate Limit khỏi Business Logic.
  * 
- * Algorithm:
- * 1. Key format: ratelimit:{key}:{window_timestamp}
- * 2. Dùng Lua script để đảm bảo tính Atomic (không bị tranh chấp dữ liệu).
- * 3. Count requests trong current window.
- * 4. Reject nếu vượt limit.
+ * Thuật toán (Algorithm):
+ * 1. Định dạng Key: ratelimit:{key}:{window_timestamp}
+ * 2. Sử dụng Lua script để đảm bảo tính Atomic (tránh tranh chấp dữ liệu).
+ * 3. Đếm số lượng request trong window hiện tại.
+ * 4. Từ chối (Reject) nếu vượt quá giới hạn (limit).
  */
 @Slf4j
 @Aspect
@@ -102,13 +102,13 @@ public class RateLimitAspect {
     private String buildRateLimitKey(ProceedingJoinPoint joinPoint, RateLimited annotation) {
         StringBuilder keyBuilder = new StringBuilder("ratelimit:");
         
-        // Use user ID if perUser is set
+        // Sử dụng User ID nếu thuộc tính perUser được bật
         if (annotation.perUser()) {
             String userId = getCurrentUserId();
             keyBuilder.append("user:").append(userId).append(":");
         }
         
-        // Parse SpEL expression if provided
+        // Parse biểu thức SpEL nếu được cung cấp
         if (!annotation.key().isEmpty()) {
             StandardEvaluationContext context = new StandardEvaluationContext();
             
@@ -125,14 +125,14 @@ public class RateLimitAspect {
                 .getValue(context, String.class);
             keyBuilder.append(parsedKey);
         } else {
-            // Default: use method signature
+            // Mặc định: sử dụng định danh của phương thức (signature)
             MethodSignature signature = (MethodSignature) joinPoint.getSignature();
             keyBuilder.append(signature.getDeclaringType().getSimpleName())
                 .append(":")
                 .append(signature.getName());
         }
         
-        // Add time window for sliding window
+        // Thêm time window phục vụ thuật toán sliding window
         long windowSeconds = annotation.timeUnit().toSeconds(annotation.window());
         long windowTimestamp = System.currentTimeMillis() / (windowSeconds * 1000);
         keyBuilder.append(":").append(windowTimestamp);

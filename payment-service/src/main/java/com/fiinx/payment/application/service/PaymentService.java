@@ -43,21 +43,21 @@ public class PaymentService {
     public PaymentResult processPayment(PaymentProcessCommand command) {
         String idempotencyKey = command.getIdempotencyKey();
         
-        // Check idempotency - if already processed, return cached result
+        // Kiểm tra tính Idempotency - nếu đã xử lý, trả về kết quả từ cache
         Optional<PaymentResult> cachedResult = getFromIdempotencyCache(idempotencyKey);
         if (cachedResult.isPresent()) {
             log.info("Returning cached payment result for idempotency key: {}", idempotencyKey);
             return cachedResult.get();
         }
         
-        // Check if payment already exists in DB
+        // Kiểm tra xem giao dịch thanh toán đã tồn tại trong DB chưa
         Optional<Payment> existingPayment = paymentRepository.findByOrderId(command.getOrderId());
         if (existingPayment.isPresent()) {
             Payment payment = existingPayment.get();
             return mapToResult(payment);
         }
         
-        // Create payment record
+        // Tạo bản ghi thanh toán mới
         Payment payment = Payment.builder()
             .orderId(command.getOrderId())
             .customerId(command.getCustomerId())
@@ -71,10 +71,10 @@ public class PaymentService {
         
         payment = paymentRepository.save(payment);
         
-        // Call external payment gateway with retry
+        // Gọi Payment Gateway bên ngoài với cơ chế Retry
         PaymentResult result = callPaymentGateway(payment);
         
-        // Update payment status
+        // Cập nhật trạng thái thanh toán
         payment.setStatus(result.isSuccess() ? PaymentStatus.COMPLETED : PaymentStatus.FAILED);
         payment.setTransactionId(result.getTransactionId());
         payment.setProcessedAt(Instant.now());
@@ -83,7 +83,7 @@ public class PaymentService {
         }
         paymentRepository.save(payment);
         
-        // Cache result for idempotency
+        // Lưu kết quả vào cache để đảm bảo tính Idempotency
         saveToIdempotencyCache(idempotencyKey, result);
         
         return result;
@@ -102,7 +102,7 @@ public class PaymentService {
             return;
         }
         
-        // Call payment gateway for refund
+        // Gọi Payment Gateway để thực hiện Refund
         boolean refundSuccess = callRefundGateway(payment);
         
         if (refundSuccess) {
@@ -121,8 +121,8 @@ public class PaymentService {
         // Mô phỏng việc gọi Gateway thanh toán bên ngoài (Stripe, PayPal, v.v.)
         log.info("Calling payment gateway for order: {}", payment.getOrderId());
         
-        // In real implementation, this would call Stripe, PayPal, etc.
-        // Simulate 95% success rate
+        // Trong thực tế, đoạn này sẽ gọi các API của Stripe, PayPal...
+        // Mô phỏng tỉ lệ thành công 95%
         if (Math.random() > 0.05) {
             return PaymentResult.builder()
                 .success(true)
@@ -152,7 +152,7 @@ public class PaymentService {
     }
     
     private boolean callRefundGateway(Payment payment) {
-        // Simulate refund call
+        // Mô phỏng việc gọi API Refund
         log.info("Processing refund for transaction: {}", payment.getTransactionId());
         return true;
     }

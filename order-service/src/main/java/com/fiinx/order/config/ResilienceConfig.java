@@ -18,28 +18,28 @@ import java.time.Duration;
 public class ResilienceConfig {
     
     /**
-     * Default Circuit Breaker configuration
+     * Cấu hình mặc định cho Circuit Breaker (Bộ ngắt mạch).
      */
     @Bean
     public CircuitBreakerConfig circuitBreakerConfig() {
         return CircuitBreakerConfig.custom()
-            // Failure rate threshold (50%)
+            // Ngưỡng tỷ lệ lỗi để kích hoạt Circuit Breaker (50%)
             .failureRateThreshold(50)
             
-            // Wait duration before transitioning from OPEN to HALF_OPEN
+            // Thời gian chờ ở trạng thái OPEN trước khi chuyển sang HALF_OPEN
             .waitDurationInOpenState(Duration.ofSeconds(30))
             
-            // Number of calls in HALF_OPEN state
+            // Số lượng cuộc gọi được phép thử ở trạng thái HALF_OPEN
             .permittedNumberOfCallsInHalfOpenState(5)
             
-            // Sliding window settings
+            // Cài đặt cho cơ chế Sliding Window (Cửa sổ trượt)
             .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.COUNT_BASED)
             .slidingWindowSize(10)
             
-            // Minimum number of calls before evaluating failure rate
+            // Số lượng cuộc gọi tối thiểu trước khi bắt đầu tính toán tỷ lệ lỗi
             .minimumNumberOfCalls(5)
             
-            // Slow call settings
+            // Cài đặt cho các cuộc gọi chậm (Slow calls)
             .slowCallRateThreshold(50)
             .slowCallDurationThreshold(Duration.ofSeconds(5))
             
@@ -47,7 +47,7 @@ public class ResilienceConfig {
     }
     
     /**
-     * Default Retry configuration
+     * Cấu hình mặc định cho Retry (Cơ chế thử lại).
      */
     @Bean
     public RetryConfig retryConfig() {
@@ -59,14 +59,14 @@ public class ResilienceConfig {
             .intervalFunction(attempt -> 
                 Duration.ofMillis((long) (500 * Math.pow(2, attempt - 1))).toMillis())
             
-            // Retry on specific exceptions
+            // Chỉ thực hiện Retry đối với một số Exception cụ thể (các lỗi tạm thời)
             .retryExceptions(
                 java.net.ConnectException.class,
                 java.net.SocketTimeoutException.class,
                 org.springframework.web.client.ResourceAccessException.class
             )
             
-            // Don't retry on these
+            // KHÔNG thực hiện Retry đối với các Exception này (lỗi nghiệp vụ)
             .ignoreExceptions(
                 com.fiinx.common.exception.BusinessException.class
             )
@@ -75,7 +75,7 @@ public class ResilienceConfig {
     }
     
     /**
-     * Default Time Limiter configuration
+     * Cấu hình mặc định cho Time Limiter (Giới hạn thời gian xử lý).
      */
     @Bean
     public TimeLimiterConfig timeLimiterConfig() {

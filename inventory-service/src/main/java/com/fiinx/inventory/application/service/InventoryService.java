@@ -47,7 +47,7 @@ public class InventoryService {
         
         // Try to reserve each item
         for (var item : command.getItems()) {
-            // Pessimistic lock on inventory row
+        // Thử chiếm pessimistic lock trên dòng dữ liệu inventory (hàng tồn kho)
             Optional<Inventory> inventoryOpt = inventoryRepository
                 .findByProductIdForUpdate(item.getProductId());
             
@@ -67,11 +67,11 @@ public class InventoryService {
                     inventory.getAvailableQuantity()
                 ));
             } else {
-                // Reserve stock
+                // Thực hiện giữ hàng (reserve stock)
                 inventory.reserve(item.getQuantity());
                 inventoryRepository.save(inventory);
                 
-                // Record reservation for potential rollback
+                // Lưu bản ghi reservation phục vụ cho việc rollback sau này nếu cần
                 InventoryReservation reservation = InventoryReservation.builder()
                     .reservationId(reservationId)
                     .orderId(command.getOrderId())
@@ -90,7 +90,7 @@ public class InventoryService {
             }
         }
         
-        // If any items failed, rollback all reservations
+        // Nếu có bất kỳ item nào thất bại, rollback toàn bộ các reservation đã thực hiện trong phiên này
         if (!failedItems.isEmpty()) {
             rollbackReservation(reservationId);
             return ReservationResult.failure(
@@ -178,7 +178,7 @@ public class InventoryService {
         }
     }
     
-    // ==================== Result Classes ====================
+    // ==================== Các lớp kết quả (Result Classes) ====================
     
     @Data
     @Builder

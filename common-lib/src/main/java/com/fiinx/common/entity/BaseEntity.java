@@ -41,8 +41,8 @@ public abstract class BaseEntity implements Serializable {
     private UUID id;
     
     /**
-     * Version for optimistic locking
-     * Prevents lost updates in concurrent modifications
+     * Version phục vụ cơ chế Optimistic Locking.
+     * Ngăn chặn việc mất dữ liệu khi có nhiều cập nhật đồng thời (Lost updates).
      */
     @Version
     @Column(name = "version")
@@ -65,7 +65,7 @@ public abstract class BaseEntity implements Serializable {
     private String updatedBy;
     
     /**
-     * Soft delete flag
+     * Cờ đánh dấu xóa mềm (Soft delete).
      */
     @Column(name = "deleted", nullable = false)
     private boolean deleted = false;
@@ -74,21 +74,21 @@ public abstract class BaseEntity implements Serializable {
     private Instant deletedAt;
     
     // ==================== Equals & HashCode ====================
-    // BEST PRACTICE: Use business key or ID for equals/hashCode
-    // Never use mutable fields
+    // BEST PRACTICE: Sử dụng business key hoặc ID cho equals/hashCode.
+    // Không bao giờ sử dụng các trường có thể thay đổi (mutable fields).
     
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BaseEntity that = (BaseEntity) o;
-        // Only compare by ID if both have been persisted
+        // Chỉ so sánh bằng ID nếu cả hai đối tượng đều đã được lưu vào database (persisted)
         return id != null && id.equals(that.id);
     }
     
     @Override
     public int hashCode() {
-        // Use class hashCode to ensure consistency even before ID is assigned
+        // Sử dụng hashCode của class để đảm bảo tính nhất quán trước khi ID được gán (assigned)
         return Objects.hash(getClass());
     }
     

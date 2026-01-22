@@ -21,12 +21,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * BEST PRACTICE #26: OAuth2 Resource Server Security
+ * BEST PRACTICE #26: Bảo mật OAuth2 Resource Server.
  * 
- * - JWT validation với Keycloak
- * - Role extraction từ realm_access claim
- * - Method-level security với @PreAuthorize
- * - Stateless session
+ * - Xác thực JWT với Keycloak.
+ * - Trích xuất Role từ claim "realm_access".
+ * - Bảo mật mức phương thức (Method-level security) với @PreAuthorize.
+ * - Cơ chế Stateless session (không lưu trạng thái phiên làm việc).
  */
 @Configuration
 @EnableWebSecurity
@@ -36,16 +36,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Disable CSRF for stateless API
+            // Vô hiệu hóa CSRF vì hệ thống sử dụng stateless API (JWT)
             .csrf(csrf -> csrf.disable())
             
-            // Stateless session
+            // Cấu hình Stateless session
             .sessionManagement(session -> 
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             
-            // Authorization rules
+            // Các quy tắc phân quyền (Authorization rules)
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints
+                // Các endpoint công khai (Public) không cần xác thực
                 .requestMatchers(
                     "/actuator/health",
                     "/actuator/info",
@@ -55,11 +55,11 @@ public class SecurityConfig {
                     "/swagger-ui.html"
                 ).permitAll()
                 
-                // All other endpoints require authentication
+                // Tất cả các request khác đều bắt buộc phải xác thực (Authenticated)
                 .anyRequest().authenticated()
             )
             
-            // OAuth2 Resource Server với JWT
+            // Cấu hình OAuth2 Resource Server để giải mã JWT
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
             );
@@ -68,7 +68,7 @@ public class SecurityConfig {
     }
     
     /**
-     * Custom JWT converter để extract roles từ Keycloak JWT
+     * Bộ chuyển đổi JWT tùy chỉnh để trích xuất các role từ Keycloak JWT
      * 
      * Keycloak JWT structure:
      * {
@@ -94,13 +94,13 @@ public class SecurityConfig {
         @Override
         @SuppressWarnings("unchecked")
         public Collection<GrantedAuthority> convert(Jwt jwt) {
-            // Extract realm roles
+            // Trích xuất các role ở mức Realm (Toàn cục của Keycloak)
             Map<String, Object> realmAccess = jwt.getClaimAsMap("realm_access");
             List<String> realmRoles = realmAccess != null 
                 ? (List<String>) realmAccess.get("roles") 
                 : List.of();
             
-            // Extract resource roles for this service
+            // Trích xuất các role cụ thể cho Client Resource (Microservice) này
             Map<String, Object> resourceAccess = jwt.getClaimAsMap("resource_access");
             List<String> resourceRoles = List.of();
             if (resourceAccess != null) {
@@ -110,7 +110,7 @@ public class SecurityConfig {
                 }
             }
             
-            // Combine all roles with ROLE_ prefix
+            // Hợp nhất tất cả các role với tiền tố ROLE_ theo chuẩn Spring Security
             return Stream.concat(
                     realmRoles.stream().map(role -> "ROLE_" + role.toUpperCase()),
                     resourceRoles.stream().map(role -> "ROLE_" + role.toUpperCase())

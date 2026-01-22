@@ -145,7 +145,7 @@ public class IdentityService {
     }
 
     /**
-     * Logout - Revoke tokens
+     * Đăng xuất - Thu hồi (Revoke) các token
      */
     public void logout(String userId) {
         log.info("Logging out user: {}", userId);
@@ -182,7 +182,7 @@ public class IdentityService {
     }
 
     /**
-     * Phân quyền (Admin only)
+     * Phân quyền (Chỉ dành cho Admin)
      */
     public void grantRole(GrantRoleRequest request) {
         log.info("Granting role {} to user {}", request.getRoleName(), request.getUserId());

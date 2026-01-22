@@ -20,9 +20,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Inventory Event Consumer
+ * Thành phần tiêu thụ sự kiện Inventory (Inventory Event Consumer).
  * 
- * Listens for inventory commands and publishes result events
+ * Lắng nghe các lệnh (commands) liên quan đến kho hàng và phát tán sự kiện kết quả.
  */
 @Slf4j
 @Component
@@ -33,7 +33,7 @@ public class InventoryEventConsumer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     
     /**
-     * Handle inventory reservation command
+     * Xử lý lệnh giữ hàng tồn kho (inventory reservation command).
      */
     @KafkaListener(
         topics = KafkaProperties.TOPIC_INVENTORY_RESERVE,
@@ -48,11 +48,11 @@ public class InventoryEventConsumer {
         
         CorrelationIdUtils.runWithCorrelationId(correlationId, () -> {
             try {
-                // Try to reserve inventory
+                // Thử thực hiện giữ hàng trong kho (reserve inventory)
                 var result = inventoryService.reserveInventory(command);
                 
                 if (result.isSuccess()) {
-                    // Publish success event
+                    // Phát tán sự kiện thành công (success event)
                     InventoryReservedEvent event = InventoryReservedEvent.builder()
                         .eventId(UUID.randomUUID().toString())
                         .correlationId(correlationId)
@@ -68,7 +68,7 @@ public class InventoryEventConsumer {
                         command.getOrderId(), event);
                     log.info("Inventory reserved for order: {}", command.getOrderId());
                 } else {
-                    // Publish failure event
+                    // Phát tán sự kiện thất bại (failure event)
                     InventoryReservationFailedEvent event = InventoryReservationFailedEvent.builder()
                         .eventId(UUID.randomUUID().toString())
                         .correlationId(correlationId)
@@ -95,7 +95,7 @@ public class InventoryEventConsumer {
     }
     
     /**
-     * Handle inventory release command (compensation)
+     * Xử lý lệnh giải phóng hàng tồn kho (inventory release command - bước bồi hoàn).
      */
     @KafkaListener(
         topics = KafkaProperties.TOPIC_INVENTORY_RELEASE,

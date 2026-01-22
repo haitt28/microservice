@@ -27,35 +27,30 @@ import java.util.concurrent.TimeUnit;
 public @interface DistributedLock {
     
     /**
-     * Lock key expression (SpEL supported)
-     * Can reference method parameters using # prefix
-     * 
-     * Examples:
-     * - "'order:create:' + #orderId"
-     * - "'payment:' + #request.orderId"
-     * - "'user:' + #userId + ':action:' + #actionType"
+     * Biểu thức Lock key (hỗ trợ SpEL).
+     * Có thể tham chiếu các tham số của phương thức bằng tiền tố #.
      */
     String key();
     
     /**
-     * Maximum time to wait for lock acquisition (in timeUnit)
-     * 0 = try once (fail fast) - recommended for double-click prevention
+     * Thời gian tối đa để chờ lấy Lock (tính theo timeUnit).
+     * 0 = chỉ thử một lần (fail fast) - khuyến nghị dùng để chống lỗi double-click.
      */
     long waitTime() default 0;
     
     /**
-     * Lock lease time (auto-release after this duration)
-     * Should be longer than expected method execution time
+     * Thời gian chiếm giữ Lock (tự động giải phóng sau thời gian này).
+     * Nên dài hơn thời gian thực thi dự kiến của phương thức.
      */
     long leaseTime() default 30;
     
     /**
-     * Time unit for waitTime and leaseTime
+     * Đơn vị thời gian cho waitTime và leaseTime.
      */
     TimeUnit timeUnit() default TimeUnit.SECONDS;
     
     /**
-     * Prefix for all lock keys (namespace)
+     * Tiền tố (prefix) cho tất cả các lock keys (định danh namespace).
      */
     String prefix() default "distributed-lock:";
 }

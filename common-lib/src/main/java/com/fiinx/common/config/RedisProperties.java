@@ -6,50 +6,50 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.time.Duration;
 
 /**
- * BEST PRACTICE #10: Redis Configuration Properties
+ * BEST PRACTICE #10: Các thuộc tính cấu hình Redis.
  * 
- * Centralized Redis settings for:
- * - Caching
- * - Rate limiting
- * - Distributed locking
- * - Session management
+ * Cài đặt Redis tập trung cho:
+ * - Caching (Bộ nhớ đệm).
+ * - Rate limiting (Giới hạn lưu lượng).
+ * - Distributed locking (Khóa phân tán).
+ * - Session management (Quản lý phiên làm việc).
  */
 @Data
 @ConfigurationProperties(prefix = "app.redis")
 public class RedisProperties {
     
     /**
-     * Redis connection mode
+     * Chế độ kết nối Redis.
      */
     private Mode mode = Mode.STANDALONE;
     
     /**
-     * Standalone configuration
+     * Cấu hình chế độ Standalone.
      */
     private Standalone standalone = new Standalone();
     
     /**
-     * Sentinel configuration
+     * Cấu hình chế độ Sentinel.
      */
     private Sentinel sentinel = new Sentinel();
     
     /**
-     * Cluster configuration
+     * Cấu hình chế độ Cluster.
      */
     private Cluster cluster = new Cluster();
     
     /**
-     * Cache configuration
+     * Cấu hình cơ chế Cache.
      */
     private Cache cache = new Cache();
     
     /**
-     * Lock configuration
+     * Cấu hình cơ chế Lock.
      */
     private Lock lock = new Lock();
     
     /**
-     * Rate limiter configuration
+     * Cấu hình cơ chế Rate Limiter.
      */
     private RateLimiter rateLimiter = new RateLimiter();
     
@@ -85,22 +85,22 @@ public class RedisProperties {
     @Data
     public static class Cache {
         /**
-         * Default TTL for cached items
+         * Thời gian sống (TTL) mặc định cho các mục trong cache.
          */
         private Duration defaultTtl = Duration.ofMinutes(30);
         
         /**
-         * Maximum cache entries
+         * Số lượng entry tối đa trong cache.
          */
         private int maxEntries = 10000;
         
         /**
-         * Cache key prefix
+         * Tiền tố (prefix) cho các cache key.
          */
         private String keyPrefix = "cache:";
         
         /**
-         * Enable/disable caching globally
+         * Bật/Tắt cơ chế caching toàn cục.
          */
         private boolean enabled = true;
     }
@@ -108,17 +108,17 @@ public class RedisProperties {
     @Data
     public static class Lock {
         /**
-         * Default wait time for lock acquisition
+         * Thời gian chờ mặc định để lấy Lock.
          */
         private Duration defaultWaitTime = Duration.ofSeconds(3);
         
         /**
-         * Default lease time (auto-release)
+         * Thời gian thuê mặc định (tự động release).
          */
         private Duration defaultLeaseTime = Duration.ofSeconds(30);
         
         /**
-         * Lock key prefix
+         * Tiền tố (prefix) cho các lock key.
          */
         private String keyPrefix = "lock:";
     }
@@ -126,22 +126,22 @@ public class RedisProperties {
     @Data
     public static class RateLimiter {
         /**
-         * Default rate limit (requests per window)
+         * Giới hạn mặc định (số lượng request trong 1 window).
          */
         private int defaultLimit = 100;
         
         /**
-         * Default window duration
+         * Thời gian window mặc định.
          */
         private Duration defaultWindow = Duration.ofMinutes(1);
         
         /**
-         * Rate limit key prefix
+         * Tiền tố (prefix) cho các rate limit key.
          */
         private String keyPrefix = "ratelimit:";
         
         /**
-         * Enable rate limiting globally
+         * Bật/Tắt cơ chế rate limiting toàn cục.
          */
         private boolean enabled = true;
     }

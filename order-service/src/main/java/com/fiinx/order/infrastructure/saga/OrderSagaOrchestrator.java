@@ -58,11 +58,11 @@ public class OrderSagaOrchestrator {
             order.getOrderNumber(), correlationId);
         
         try {
-            // Step 1: Update status and send inventory reserve command
+            // Bước 1: Cập nhật trạng thái và gửi lệnh giữ hàng (inventory reserve command)
             order.markAsPendingInventory();
             orderRepository.save(order);
             
-            // Build inventory reserve command
+            // Khởi tạo lệnh giữ hàng (inventory reserve command)
             InventoryReserveCommand command = InventoryReserveCommand.builder()
                 .eventId(UUID.randomUUID().toString())
                 .correlationId(correlationId)
@@ -78,7 +78,7 @@ public class OrderSagaOrchestrator {
                 .build();
             
             eventPublisher.publishInventoryReserveCommand(command);
-            log.info("Inventory reserve command sent for order: {}", order.getOrderNumber());
+            log.info("Lệnh giữ hàng đã được gửi cho đơn hàng: {}", order.getOrderNumber());
             
         } catch (Exception e) {
             log.error("Saga failed to start for order: {}", order.getOrderNumber(), e);
@@ -101,7 +101,7 @@ public class OrderSagaOrchestrator {
             order.markAsPendingPayment();
             orderRepository.save(order);
             
-            // Send payment command
+            // Gửi lệnh thanh toán (payment command)
             PaymentProcessCommand command = PaymentProcessCommand.builder()
                 .eventId(UUID.randomUUID().toString())
                 .correlationId(correlationId)
@@ -116,7 +116,7 @@ public class OrderSagaOrchestrator {
                 .build();
             
             eventPublisher.publishPaymentCommand(command);
-            log.info("Payment command sent for order: {}", order.getOrderNumber());
+            log.info("Lệnh thanh toán đã được gửi cho đơn hàng: {}", order.getOrderNumber());
             
         } catch (Exception e) {
             log.error("Failed to process inventory reserved for order: {}", orderId, e);
@@ -139,7 +139,7 @@ public class OrderSagaOrchestrator {
             order.markAsCompleted();
             orderRepository.save(order);
             
-            // Send notification
+            // Gửi thông báo thành công (notification)
             SendNotificationCommand notification = SendNotificationCommand.builder()
                 .eventId(UUID.randomUUID().toString())
                 .correlationId(correlationId)
@@ -162,15 +162,15 @@ public class OrderSagaOrchestrator {
             
         } catch (Exception e) {
             log.error("Failed to complete order: {}", orderId, e);
-            // At this point, payment is done. We should NOT refund automatically.
-            // Log error and let support handle it
+            // Tại thời điểm này, việc thanh toán đã hoàn tất. Chúng ta KHÔNG nên tự động hoàn tiền (refund).
+            // Ghi log lỗi và để bộ phận hỗ trợ xử lý thủ công.
             order.markAsFailed("Post-payment processing failed: " + e.getMessage());
             orderRepository.save(order);
         }
     }
     
     /**
-     * Handle inventory reservation failure
+     * Xử lý khi việc giữ hàng tồn kho thất bại.
      */
     @Transactional
     public void onInventoryFailed(String orderId, String reason, String correlationId) {
@@ -182,12 +182,12 @@ public class OrderSagaOrchestrator {
         order.markAsFailed("Inventory reservation failed: " + reason);
         orderRepository.save(order);
         
-        // Send failure notification
+        // Gửi thông báo thất bại cho người dùng
         sendFailureNotification(order, "Unable to reserve inventory", correlationId);
     }
     
     /**
-     * Handle payment failure
+     * Xử lý khi việc thanh toán thất bại.
      */
     @Transactional
     public void onPaymentFailed(String orderId, String reason, String correlationId) {
@@ -196,7 +196,7 @@ public class OrderSagaOrchestrator {
         Order order = orderRepository.findById(UUID.fromString(orderId))
             .orElseThrow(() -> new IllegalStateException("Order not found: " + orderId));
         
-        // Compensate: release inventory
+        // Thực hiện bồi hoàn (Compensate): Giải phóng hàng tồn kho
         compensateOrder(order, "Payment failed: " + reason);
     }
     
@@ -208,7 +208,7 @@ public class OrderSagaOrchestrator {
         log.info("Compensating order: {}. Reason: {}", order.getOrderNumber(), reason);
         String correlationId = CorrelationIdUtils.getOrGenerate();
         
-        // Release inventory if reserved
+        // Giải phóng hàng tồn kho nếu đã giữ hàng thành công trước đó (reserved)
         if (order.getReservationId() != null) {
             eventPublisher.publishInventoryReleaseCommand(
                 order.getId().toString(), 
@@ -218,7 +218,7 @@ public class OrderSagaOrchestrator {
             );
         }
         
-        // Refund payment if processed
+        // Hoàn tiền (refund) nếu việc thanh toán đã được xử lý thành công (processed) trước đó
         if (order.getPaymentId() != null) {
             eventPublisher.publishPaymentRefundCommand(
                 order.getId().toString(),
@@ -228,11 +228,11 @@ public class OrderSagaOrchestrator {
             );
         }
         
-        // Update order status
+        // Cập nhật trạng thái đơn hàng sang thất bại
         order.markAsFailed(reason);
         orderRepository.save(order);
         
-        // Send failure notification
+        // Gửi thông báo thất bại cho người dùng
         sendFailureNotification(order, reason, correlationId);
     }
     

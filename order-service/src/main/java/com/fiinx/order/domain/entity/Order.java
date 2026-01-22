@@ -125,7 +125,7 @@ public class Order extends BaseEntity {
     }
     
     // ==================== State Transitions ====================
-    // BEST PRACTICE: Explicit state machine with validation
+    // BEST PRACTICE: State machine tường minh với cơ chế validation
     
     public void markAsPendingInventory() {
         validateTransition(OrderStatus.PENDING_INVENTORY);

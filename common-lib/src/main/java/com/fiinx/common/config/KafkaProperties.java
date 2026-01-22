@@ -8,42 +8,42 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * BEST PRACTICE #9: Externalized Kafka Configuration
+ * BEST PRACTICE #9: Cấu hình Kafka tập trung (Externalized Configuration).
  * 
- * Type-safe configuration binding
- * Dễ dàng override per environment
+ * - Binding cấu hình kiểu type-safe.
+ * - Dễ dàng ghi đè (override) theo từng môi trường (environment).
  */
 @Data
 @ConfigurationProperties(prefix = "app.kafka")
 public class KafkaProperties {
     
     /**
-     * Kafka bootstrap servers
+     * Danh sách các Kafka bootstrap servers.
      */
     private String bootstrapServers = "localhost:9092";
     
     /**
-     * Consumer group ID prefix
+     * Tiền tố (prefix) cho Consumer group ID.
      */
     private String consumerGroupPrefix = "fiinx";
     
     /**
-     * Producer settings
+     * Các cài đặt cho Producer.
      */
     private Producer producer = new Producer();
     
     /**
-     * Consumer settings
+     * Các cài đặt cho Consumer.
      */
     private Consumer consumer = new Consumer();
     
     /**
-     * Topic configurations
+     * Cấu hình cho các Topics.
      */
     private Map<String, TopicConfig> topics = new HashMap<>();
     
     /**
-     * Dead Letter Queue settings
+     * Cài đặt cho Dead Letter Queue (DLQ).
      */
     private DeadLetterQueue dlq = new DeadLetterQueue();
     
@@ -58,13 +58,13 @@ public class KafkaProperties {
         private int bufferMemory = 33554432;
         
         /**
-         * Idempotence - exactly-once semantics
+         * Tính Idempotence - đảm bảo ngữ nghĩa exactly-once.
          */
         private boolean enableIdempotence = true;
         
         /**
-         * Max in-flight requests per connection
-         * Should be <=5 when idempotence is enabled
+         * Số lượng yêu cầu đang chờ xử lý (in-flight requests) tối đa trên mỗi kết nối.
+         * Nên <= 5 khi enable idempotence.
          */
         private int maxInFlightRequestsPerConnection = 5;
     }
@@ -79,12 +79,12 @@ public class KafkaProperties {
         private Duration heartbeatInterval = Duration.ofSeconds(10);
         
         /**
-         * Concurrency level (number of consumer threads)
+         * Mức độ đồng thời (số lượng consumer threads).
          */
         private int concurrency = 3;
         
         /**
-         * Retry configuration
+         * Cấu hình cơ chế Retry.
          */
         private int maxRetries = 3;
         private Duration retryBackoff = Duration.ofSeconds(1);
@@ -106,7 +106,7 @@ public class KafkaProperties {
     }
     
     // ==================== Topic Names ====================
-    // BEST PRACTICE: Centralized topic name constants
+    // BEST PRACTICE: Tập trung khai báo hằng số tên Topic.
     
     public static final String TOPIC_ORDER_CREATED = "order.created";
     public static final String TOPIC_ORDER_COMPLETED = "order.completed";

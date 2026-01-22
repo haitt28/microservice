@@ -12,15 +12,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RegistrationRequest {
     
-    @NotBlank(message = "Username is required")
+    @NotBlank(message = "Tên đăng nhập không được để trống")
     @Size(min = 3, max = 50)
     private String username;
     
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email should be valid")
+    @NotBlank(message = "Email không được để trống")
+    @Email(message = "Email không đúng định dạng")
     private String email;
     
-    @NotBlank(message = "Password is required")
+    @NotBlank(message = "Mật khẩu không được để trống")
     @Size(min = 6)
     private String password;
     

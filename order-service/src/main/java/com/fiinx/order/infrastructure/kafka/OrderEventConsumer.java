@@ -57,7 +57,7 @@ public class OrderEventConsumer {
                 acknowledgment.acknowledge();
             } catch (Exception e) {
                 log.error("Failed to process InventoryReservedEvent: {}", e.getMessage(), e);
-                // Don't acknowledge - will be retried or sent to DLQ
+                // Không acknowledge - tin nhắn sẽ được retry hoặc đưa vào DLQ
                 throw e;
             }
         });

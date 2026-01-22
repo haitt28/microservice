@@ -28,7 +28,7 @@ public class KeycloakConfig {
     public Keycloak keycloak() {
         return KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
-                .realm("master") // Connect to master realm to manage other realms
+                .realm("master") // Kết nối tới realm "master" để quản lý các realm khác
                 .username(adminUsername)
                 .password(adminPassword)
                 .clientId(adminClientId)

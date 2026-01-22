@@ -11,16 +11,16 @@ import java.util.Map;
 /**
  * BEST PRACTICE #37: Notification Service với Template Support
  * 
- * - Template-based notifications
- * - Multiple channels (Email, SMS, Push)
- * - Async processing
+ * - Thông báo dựa trên Template
+ * - Đa kênh (Email, SMS, Push)
+ * - Xử lý Async
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
     
-    // In real implementation, inject EmailService, SMSService, PushService
+    // Trong thực tế, cần inject EmailService, SMSService, PushService
     
     @Async("notificationExecutor")
     public void sendNotification(SendNotificationCommand command) {
@@ -47,11 +47,11 @@ public class NotificationService {
         String subject = getEmailSubject(command.getType());
         String body = buildEmailBody(command.getTemplateId(), command.getTemplateData());
         
-        // In production: use JavaMailSender
+        // Khi chạy production: sử dụng JavaMailSender
         log.info("Sending email to {}: subject={}", command.getRecipientEmail(), subject);
         log.debug("Email body: {}", body);
         
-        // Simulate email sending
+        // Mô phỏng việc gửi Email
         simulateSend();
     }
     
@@ -63,14 +63,14 @@ public class NotificationService {
         
         String smsBody = buildSmsBody(command.getTemplateId(), command.getTemplateData());
         
-        // In production: use Twilio, AWS SNS, etc.
+        // Khi chạy production: sử dụng Twilio, AWS SNS...
         log.info("Sending SMS to {}: {}", command.getRecipientPhone(), smsBody);
         
         simulateSend();
     }
     
     private void sendPush(SendNotificationCommand command) {
-        // In production: use Firebase Cloud Messaging, APNs, etc.
+        // Khi chạy production: sử dụng Firebase Cloud Messaging, APNs...
         log.info("Sending push notification to userId: {}", command.getRecipientId());
         
         simulateSend();
@@ -89,7 +89,7 @@ public class NotificationService {
     }
     
     private String buildEmailBody(String templateId, Map<String, Object> data) {
-        // In production: use Thymeleaf, FreeMarker, etc.
+        // Khi chạy production: sử dụng Thymeleaf, FreeMarker...
         StringBuilder sb = new StringBuilder();
         sb.append("Template: ").append(templateId).append("\n\n");
         
@@ -102,7 +102,7 @@ public class NotificationService {
     }
     
     private String buildSmsBody(String templateId, Map<String, Object> data) {
-        // Short SMS format
+        // Định dạng SMS ngắn
         if (data.containsKey("orderNumber")) {
             return String.format("Order %s confirmed. Thank you for your purchase!", 
                 data.get("orderNumber"));
@@ -111,7 +111,7 @@ public class NotificationService {
     }
     
     private void simulateSend() {
-        // Simulate network delay
+        // Mô phỏng độ trễ mạng
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {

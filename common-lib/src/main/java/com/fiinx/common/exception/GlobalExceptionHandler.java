@@ -116,7 +116,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleGenericException(
             Exception ex, HttpServletRequest request) {
         
-        // BEST PRACTICE: Log full stack trace but don't expose to client
+        // BEST PRACTICE: Log toàn bộ stack trace nhưng không bao giờ để lộ ra phía client.
         log.error("Unexpected error for request {} {}: {}",
                 request.getMethod(),
                 request.getRequestURI(),
@@ -133,8 +133,8 @@ public class GlobalExceptionHandler {
     private ApiResponse<Void> buildErrorResponse(String code, String message) {
         ApiResponse<Void> response = ApiResponse.error(code, message);
         
-        // Gắn Trace ID vào response nếu có. 
-        // Khi client báo lỗi, họ chỉ cần đưa Trace ID này cho bạn là bạn tìm được lỗi ngay.
+        // Gắn Trace ID vào phản hồi (response) nếu có. 
+        // Khi client báo lỗi, họ chỉ cần cung cấp Trace ID này để bạn tìm lỗi nhanh chóng.
         if (tracer != null) {
             Span currentSpan = tracer.currentSpan();
             if (currentSpan != null && response.getError() != null) {
