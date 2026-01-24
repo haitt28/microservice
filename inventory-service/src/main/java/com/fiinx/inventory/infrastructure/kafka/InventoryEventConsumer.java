@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -53,6 +54,10 @@ public class InventoryEventConsumer {
                 
                 if (result.isSuccess()) {
                     // Phát tán sự kiện thành công (success event)
+                    List<InventoryReservedEvent.ReservedItem> reservedItems = result.getReservedItems().stream()
+                        .map(item -> new InventoryReservedEvent.ReservedItem(item.getProductId(), item.getQuantity(), null))
+                        .collect(java.util.stream.Collectors.toList());
+
                     InventoryReservedEvent event = InventoryReservedEvent.builder()
                         .eventId(UUID.randomUUID().toString())
                         .correlationId(correlationId)
@@ -61,7 +66,7 @@ public class InventoryEventConsumer {
                         .source("inventory-service")
                         .orderId(command.getOrderId())
                         .reservationId(result.getReservationId())
-                        .reservedItems(result.getReservedItems())
+                        .reservedItems(reservedItems)
                         .build();
                     
                     kafkaTemplate.send(KafkaProperties.TOPIC_INVENTORY_RESERVED, 
@@ -69,6 +74,10 @@ public class InventoryEventConsumer {
                     log.info("Inventory reserved for order: {}", command.getOrderId());
                 } else {
                     // Phát tán sự kiện thất bại (failure event)
+                    List<InventoryReservationFailedEvent.FailedItem> failedItems = result.getFailedItems().stream()
+                        .map(item -> new InventoryReservationFailedEvent.FailedItem(item.getProductId(), item.getQuantity(), 0))
+                        .collect(java.util.stream.Collectors.toList());
+
                     InventoryReservationFailedEvent event = InventoryReservationFailedEvent.builder()
                         .eventId(UUID.randomUUID().toString())
                         .correlationId(correlationId)
@@ -77,7 +86,7 @@ public class InventoryEventConsumer {
                         .source("inventory-service")
                         .orderId(command.getOrderId())
                         .failureReason(result.getFailureReason())
-                        .failedItems(result.getFailedItems())
+                        .failedItems(failedItems)
                         .build();
                     
                     kafkaTemplate.send(KafkaProperties.TOPIC_INVENTORY_FAILED, 

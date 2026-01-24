@@ -3,6 +3,7 @@ package com.fiinx.product.domain.entity;
 import com.fiinx.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Category extends BaseEntity {
     
     @Column(nullable = false, length = 255)

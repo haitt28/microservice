@@ -22,6 +22,8 @@ public class SendNotificationCommand extends DomainEvent {
     private String recipientId;
     private String recipientEmail;
     private String recipientPhone;
+    private String title;
+    private String message;
     private NotificationType type;
     private String templateId;
     private Map<String, Object> templateData;

@@ -72,6 +72,10 @@ spring:
           issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8080/realms/microservice-realm}
           jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:8080/realms/microservice-realm/protocol/openid-connect/certs}
 
+  cloud:
+    config:
+      enabled: false
+
   # ==================== Virtual Threads (Java 21+) ====================
   threads:
     virtual:

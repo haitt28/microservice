@@ -2,7 +2,7 @@ package com.fiinx.review.application.service;
 
 import com.fiinx.common.dto.PageResponse;
 import com.fiinx.common.exception.BusinessException;
-import com.fiinx.common.exception.NotFoundException;
+import com.fiinx.common.exception.ResourceNotFoundException;
 import com.fiinx.review.application.dto.CreateReviewRequest;
 import com.fiinx.review.application.dto.ReviewResponse;
 import com.fiinx.review.application.mapper.ReviewMapper;
@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.UUID;
@@ -35,7 +36,7 @@ public class ReviewService {
         log.info("Creating review for product: {} by user: {}", request.getProductId(), userId);
 
         if (reviewRepository.existsByProductIdAndUserId(request.getProductId(), userId)) {
-            throw new BusinessException("You have already reviewed this product");
+            throw new BusinessException("ALREADY_REVIEWED", "You have already reviewed this product", HttpStatus.BAD_REQUEST);
         }
 
         Review review = reviewMapper.toEntity(request);
@@ -55,25 +56,14 @@ public class ReviewService {
     public PageResponse<ReviewResponse> getProductReviews(UUID productId, Pageable pageable) {
         Page<Review> page = reviewRepository.findByProductIdAndStatus(productId, ReviewStatus.APPROVED, pageable);
         
-        List<ReviewResponse> content = page.getContent().stream()
-                .map(reviewMapper::toResponse)
-                .collect(Collectors.toList());
-
-        return PageResponse.<ReviewResponse>builder()
-                .content(content)
-                .pageNumber(page.getNumber())
-                .pageSize(page.getSize())
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .last(page.isLast())
-                .build();
+        return PageResponse.from(page.map(reviewMapper::toResponse));
     }
 
     @Transactional
     public void approveReview(UUID reviewId) {
         log.info("Approving review: {}", reviewId);
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new NotFoundException("Review not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Review", "id", reviewId));
         
         review.setStatus(ReviewStatus.APPROVED);
         reviewRepository.save(review);
@@ -86,7 +76,7 @@ public class ReviewService {
     public void rejectReview(UUID reviewId) {
         log.info("Rejecting review: {}", reviewId);
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new NotFoundException("Review not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Review", "id", reviewId));
         
         review.setStatus(ReviewStatus.REJECTED);
         reviewRepository.save(review);

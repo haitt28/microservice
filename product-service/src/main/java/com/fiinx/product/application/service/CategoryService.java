@@ -1,6 +1,6 @@
 package com.fiinx.product.application.service;
 
-import com.fiinx.common.exception.NotFoundException;
+import com.fiinx.common.exception.ResourceNotFoundException;
 import com.fiinx.product.domain.entity.Category;
 import com.fiinx.product.domain.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +40,7 @@ public class CategoryService {
      */
     public Category getCategoryById(UUID id) {
         return categoryRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Category not found: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
     }
     
     /**
@@ -48,7 +48,7 @@ public class CategoryService {
      */
     public Category getCategoryBySlug(String slug) {
         return categoryRepository.findBySlug(slug)
-            .orElseThrow(() -> new NotFoundException("Category not found with slug: " + slug));
+            .orElseThrow(() -> new ResourceNotFoundException("Category", "slug", slug));
     }
     
     /**

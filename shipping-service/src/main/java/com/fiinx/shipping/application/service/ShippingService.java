@@ -4,7 +4,7 @@ import com.fiinx.shipping.application.dto.*;
 import com.fiinx.shipping.domain.entity.Shipment;
 import com.fiinx.shipping.domain.entity.ShippingProvider;
 import com.fiinx.shipping.domain.repository.ShipmentRepository;
-import com.fiinx.common.exception.NotFoundException;
+import com.fiinx.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -82,7 +82,7 @@ public class ShippingService {
     @Transactional(readOnly = true)
     public ShipmentResponse getTrackingInfo(String trackingCode) {
         Shipment shipment = shipmentRepository.findByTrackingCode(trackingCode)
-                .orElseThrow(() -> new NotFoundException("Shipment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Shipment", "trackingCode", trackingCode));
         
         return ShipmentResponse.builder()
                 .id(shipment.getId())

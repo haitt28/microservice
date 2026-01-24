@@ -2,7 +2,6 @@ package com.fiinx.cart.application.service;
 
 import com.fiinx.cart.domain.model.Cart;
 import com.fiinx.cart.domain.model.CartItem;
-import com.fiinx.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBucket;

@@ -5,21 +5,16 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class WishlistResponse {
     private String userId;
     private String name;
     private List<WishlistItemDto> items;
-}
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-class WishlistItemDto {
-    private UUID productId;
-    private Instant addedAt;
+    public WishlistResponse() {}
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public List<WishlistItemDto> getItems() { return items; }
+    public void setItems(List<WishlistItemDto> items) { this.items = items; }
 }

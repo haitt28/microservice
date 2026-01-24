@@ -1,6 +1,9 @@
 -- V1: Create brands table
 -- Senior Note: Tạo bảng brands trước vì products có foreign key tới brands
 
+-- Enable pg_trgm for full-text search
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+
 CREATE TABLE brands (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
@@ -12,8 +15,12 @@ CREATE TABLE brands (
     active BOOLEAN NOT NULL DEFAULT true,
     product_count INTEGER NOT NULL DEFAULT 0,
     display_order INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255),
+    updated_by VARCHAR(255),
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    deleted_at TIMESTAMPTZ,
     version BIGINT NOT NULL DEFAULT 0
 );
 

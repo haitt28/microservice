@@ -18,7 +18,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_MULTIPLE_DATABASES: orderdb,inventorydb,paymentdb
+      POSTGRES_MULTIPLE_DATABASES: orderdb,inventorydb,paymentdb,identitydb,productdb,cartdb,promotiondb,reviewdb,shippingdb,mediadb,searchdb,analyticsdb,wishlistdb,chatdb
     ports:
       - "5432:5432"
     volumes:

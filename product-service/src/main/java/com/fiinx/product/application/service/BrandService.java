@@ -1,6 +1,6 @@
 package com.fiinx.product.application.service;
 
-import com.fiinx.common.exception.NotFoundException;
+import com.fiinx.common.exception.ResourceNotFoundException;
 import com.fiinx.product.domain.entity.Brand;
 import com.fiinx.product.domain.repository.BrandRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class BrandService {
      */
     public Brand getBrandById(UUID id) {
         return brandRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Brand not found: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Brand", "id", id));
     }
     
     /**
@@ -39,7 +39,7 @@ public class BrandService {
      */
     public Brand getBrandBySlug(String slug) {
         return brandRepository.findBySlug(slug)
-            .orElseThrow(() -> new NotFoundException("Brand not found with slug: " + slug));
+            .orElseThrow(() -> new ResourceNotFoundException("Brand", "slug", slug));
     }
     
     /**

@@ -2,7 +2,11 @@ package com.fiinx.product.application.service;
 
 import com.fiinx.common.dto.PageResponse;
 import com.fiinx.common.exception.BusinessException;
-import com.fiinx.common.exception.NotFoundException;
+import com.fiinx.common.exception.ResourceNotFoundException;
+import com.fiinx.product.infrastructure.kafka.ProductEventPublisher;
+import com.fiinx.common.event.product.ProductCreatedEvent;
+import com.fiinx.common.event.product.ProductUpdatedEvent;
+import com.fiinx.common.event.product.ProductDeletedEvent;
 import com.fiinx.product.application.dto.request.CreateProductRequest;
 import com.fiinx.product.application.dto.response.ProductDetailResponse;
 import com.fiinx.product.application.mapper.ProductMapper;
@@ -20,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -52,7 +57,7 @@ public class ProductService {
     private final BrandRepository brandRepository;
     private final ProductMapper productMapper;
     private final RedissonClient redissonClient;
-    // private final ProductEventPublisher eventPublisher; // TODO: implement later
+    private final ProductEventPublisher eventPublisher;
     
     private static final String CACHE_PREFIX_DETAIL = "product:detail:";
     private static final Duration CACHE_TTL_DETAIL = Duration.ofHours(1);
@@ -79,13 +84,13 @@ public class ProductService {
         // Set relationships
         if (request.getBrandId() != null) {
             Brand brand = brandRepository.findById(request.getBrandId())
-                .orElseThrow(() -> new NotFoundException("Brand not found: " + request.getBrandId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Brand", "id", request.getBrandId()));
             product.setBrand(brand);
         }
         
         if (request.getCategoryId() != null) {
             Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new NotFoundException("Category not found: " + request.getCategoryId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", request.getCategoryId()));
             product.setCategory(category);
         }
         
@@ -113,17 +118,25 @@ public class ProductService {
         }
         
         // Save product
-        product = productRepository.save(product);
+        Product savedProduct = productRepository.save(product);
         
         // Update category/brand product count
-        updateProductCounts(product.getCategory(), product.getBrand(), 1);
+        updateProductCounts(savedProduct.getCategory(), savedProduct.getBrand(), 1);
         
-        // TODO: Publish event
-        // eventPublisher.publishProductCreated(product);
+        // Publish event
+        eventPublisher.publishProductCreated(ProductCreatedEvent.builder()
+            .productId(savedProduct.getId())
+            .name(savedProduct.getName())
+            .slug(savedProduct.getSlug())
+            .sku(savedProduct.getSku())
+            .basePrice(savedProduct.getBasePrice())
+            .brandId(savedProduct.getBrand() != null ? savedProduct.getBrand().getId().toString() : null)
+            .categoryId(savedProduct.getCategory() != null ? savedProduct.getCategory().getId().toString() : null)
+            .build());
         
-        log.info("Product created successfully: id={}, sku={}", product.getId(), product.getSku());
+        log.info("Product created successfully: id={}, sku={}", savedProduct.getId(), savedProduct.getSku());
         
-        return productMapper.toDetailResponse(product);
+        return productMapper.toDetailResponse(savedProduct);
     }
     
     // ==================== Read Operations ====================
@@ -134,7 +147,7 @@ public class ProductService {
     @Cacheable(value = "products", key = "#id")
     public ProductDetailResponse getProductById(UUID id) {
         Product product = productRepository.findByIdWithDetails(id)
-            .orElseThrow(() -> new NotFoundException("Product not found: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
         
         // Increment view count async (không block response)
         incrementViewCountAsync(id);
@@ -147,7 +160,7 @@ public class ProductService {
      */
     public ProductDetailResponse getProductBySlug(String slug) {
         Product product = productRepository.findBySlug(slug)
-            .orElseThrow(() -> new NotFoundException("Product not found with slug: " + slug));
+            .orElseThrow(() -> new ResourceNotFoundException("Product", "slug", slug));
         
         incrementViewCountAsync(product.getId());
         
@@ -186,16 +199,7 @@ public class ProductService {
                 status != null ? status : ProductStatus.ACTIVE, pageable);
         }
         
-        List<ProductDetailResponse> content = productMapper.toDetailResponseList(page.getContent());
-        
-        return PageResponse.<ProductDetailResponse>builder()
-            .content(content)
-            .pageNumber(page.getNumber())
-            .pageSize(page.getSize())
-            .totalElements(page.getTotalElements())
-            .totalPages(page.getTotalPages())
-            .last(page.isLast())
-            .build();
+        return PageResponse.from(page.map(productMapper::toDetailResponse));
     }
     
     /**
@@ -203,16 +207,7 @@ public class ProductService {
      */
     public PageResponse<ProductDetailResponse> searchProducts(String keyword, Pageable pageable) {
         Page<Product> page = productRepository.searchByKeyword(ProductStatus.ACTIVE, keyword, pageable);
-        List<ProductDetailResponse> content = productMapper.toDetailResponseList(page.getContent());
-        
-        return PageResponse.<ProductDetailResponse>builder()
-            .content(content)
-            .pageNumber(page.getNumber())
-            .pageSize(page.getSize())
-            .totalElements(page.getTotalElements())
-            .totalPages(page.getTotalPages())
-            .last(page.isLast())
-            .build();
+        return PageResponse.from(page.map(productMapper::toDetailResponse));
     }
     
     /**
@@ -220,16 +215,7 @@ public class ProductService {
      */
     public PageResponse<ProductDetailResponse> getFeaturedProducts(Pageable pageable) {
         Page<Product> page = productRepository.findByFeaturedTrueAndStatus(ProductStatus.ACTIVE, pageable);
-        List<ProductDetailResponse> content = productMapper.toDetailResponseList(page.getContent());
-        
-        return PageResponse.<ProductDetailResponse>builder()
-            .content(content)
-            .pageNumber(page.getNumber())
-            .pageSize(page.getSize())
-            .totalElements(page.getTotalElements())
-            .totalPages(page.getTotalPages())
-            .last(page.isLast())
-            .build();
+        return PageResponse.from(page.map(productMapper::toDetailResponse));
     }
     
     /**
@@ -237,16 +223,7 @@ public class ProductService {
      */
     public PageResponse<ProductDetailResponse> getBestSellers(Pageable pageable) {
         Page<Product> page = productRepository.findBestSellers(ProductStatus.ACTIVE, pageable);
-        List<ProductDetailResponse> content = productMapper.toDetailResponseList(page.getContent());
-        
-        return PageResponse.<ProductDetailResponse>builder()
-            .content(content)
-            .pageNumber(page.getNumber())
-            .pageSize(page.getSize())
-            .totalElements(page.getTotalElements())
-            .totalPages(page.getTotalPages())
-            .last(page.isLast())
-            .build();
+        return PageResponse.from(page.map(productMapper::toDetailResponse));
     }
     
     /**
@@ -254,16 +231,7 @@ public class ProductService {
      */
     public PageResponse<ProductDetailResponse> getNewArrivals(Pageable pageable) {
         Page<Product> page = productRepository.findByNewArrivalTrueAndStatus(ProductStatus.ACTIVE, pageable);
-        List<ProductDetailResponse> content = productMapper.toDetailResponseList(page.getContent());
-        
-        return PageResponse.<ProductDetailResponse>builder()
-            .content(content)
-            .pageNumber(page.getNumber())
-            .pageSize(page.getSize())
-            .totalElements(page.getTotalElements())
-            .totalPages(page.getTotalPages())
-            .last(page.isLast())
-            .build();
+        return PageResponse.from(page.map(productMapper::toDetailResponse));
     }
     
     /**
@@ -271,17 +239,10 @@ public class ProductService {
      */
     public PageResponse<ProductDetailResponse> getRelatedProducts(UUID productId, Pageable pageable) {
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new NotFoundException("Product not found: " + productId));
+            .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId));
         
         if (product.getCategory() == null) {
-            return PageResponse.<ProductDetailResponse>builder()
-                .content(List.of())
-                .pageNumber(0)
-                .pageSize(0)
-                .totalElements(0L)
-                .totalPages(0)
-                .last(true)
-                .build();
+            return PageResponse.of(List.of(), 0, 0, 0, 0);
         }
         
         Page<Product> page = productRepository.findRelatedProducts(
@@ -291,16 +252,7 @@ public class ProductService {
             pageable
         );
         
-        List<ProductDetailResponse> content = productMapper.toDetailResponseList(page.getContent());
-        
-        return PageResponse.<ProductDetailResponse>builder()
-            .content(content)
-            .pageNumber(page.getNumber())
-            .pageSize(page.getSize())
-            .totalElements(page.getTotalElements())
-            .totalPages(page.getTotalPages())
-            .last(page.isLast())
-            .build();
+        return PageResponse.from(page.map(productMapper::toDetailResponse));
     }
     
     // ==================== Update Operations ====================
@@ -314,7 +266,7 @@ public class ProductService {
         log.info("Updating product: id={}", id);
         
         Product product = productRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Product not found: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
         
         // Validate SKU uniqueness (if changed)
         if (!product.getSku().equals(request.getSku())) {
@@ -328,21 +280,29 @@ public class ProductService {
         if (request.getBrandId() != null && 
             (product.getBrand() == null || !product.getBrand().getId().equals(request.getBrandId()))) {
             Brand newBrand = brandRepository.findById(request.getBrandId())
-                .orElseThrow(() -> new NotFoundException("Brand not found: " + request.getBrandId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Brand", "id", request.getBrandId()));
             product.setBrand(newBrand);
         }
         
         if (request.getCategoryId() != null && 
             (product.getCategory() == null || !product.getCategory().getId().equals(request.getCategoryId()))) {
             Category newCategory = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new NotFoundException("Category not found: " + request.getCategoryId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", request.getCategoryId()));
             product.setCategory(newCategory);
         }
         
         product = productRepository.save(product);
         
-        // TODO: Publish event
-        // eventPublisher.publishProductUpdated(product);
+        // Publish event
+        eventPublisher.publishProductUpdated(ProductUpdatedEvent.builder()
+            .productId(product.getId())
+            .name(product.getName())
+            .slug(product.getSlug())
+            .sku(product.getSku())
+            .basePrice(product.getBasePrice())
+            .salePrice(product.getSalePrice())
+            .status(product.getStatus().name())
+            .build());
         
         log.info("Product updated successfully: id={}", id);
         
@@ -356,7 +316,7 @@ public class ProductService {
     @CacheEvict(value = "products", key = "#id")
     public ProductDetailResponse publishProduct(UUID id) {
         Product product = productRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Product not found: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
         
         product.publish();
         product = productRepository.save(product);
@@ -373,7 +333,7 @@ public class ProductService {
     @CacheEvict(value = "products", key = "#id")
     public ProductDetailResponse deactivateProduct(UUID id) {
         Product product = productRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Product not found: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
         
         product.deactivate();
         product = productRepository.save(product);
@@ -392,7 +352,7 @@ public class ProductService {
     @CacheEvict(value = "products", key = "#id")
     public void deleteProduct(UUID id) {
         Product product = productRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Product not found: " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
         
         product.softDelete();
         productRepository.save(product);
@@ -400,8 +360,10 @@ public class ProductService {
         // Update counts
         updateProductCounts(product.getCategory(), product.getBrand(), -1);
         
-        // TODO: Publish event
-        // eventPublisher.publishProductDeleted(id);
+        // Publish event
+        eventPublisher.publishProductDeleted(ProductDeletedEvent.builder()
+            .productId(product.getId())
+            .build());
         
         log.info("Product soft deleted: id={}", id);
     }
@@ -435,7 +397,7 @@ public class ProductService {
         if (productRepository.existsBySku(sku)) {
             Product existing = productRepository.findBySku(sku).orElse(null);
             if (existing != null && (excludeId == null || !existing.getId().equals(excludeId))) {
-                throw new BusinessException("SKU already exists: " + sku);
+                throw new BusinessException("DUPLICATE_SKU", "SKU already exists: " + sku, HttpStatus.BAD_REQUEST);
             }
         }
     }

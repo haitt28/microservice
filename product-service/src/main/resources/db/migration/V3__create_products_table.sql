@@ -19,9 +19,13 @@ CREATE TABLE products (
     review_count INTEGER NOT NULL DEFAULT 0,
     featured BOOLEAN NOT NULL DEFAULT false,
     new_arrival BOOLEAN NOT NULL DEFAULT false,
-    published_at TIMESTAMP,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    published_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255),
+    updated_by VARCHAR(255),
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    deleted_at TIMESTAMPTZ,
     version BIGINT NOT NULL DEFAULT 0,
     
     -- Constraints

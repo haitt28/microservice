@@ -1,28 +1,37 @@
 package com.fiinx.wishlist.application.service;
 
 import com.fiinx.wishlist.application.dto.WishlistResponse;
+import com.fiinx.wishlist.application.dto.WishlistItemDto;
 import com.fiinx.wishlist.domain.entity.Wishlist;
 import com.fiinx.wishlist.domain.repository.WishlistRepository;
-import com.fiinx.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class WishlistService {
+    
+    private static final Logger log = LoggerFactory.getLogger(WishlistService.class);
 
     private final WishlistRepository wishlistRepository;
+
+    public WishlistService(WishlistRepository wishlistRepository) {
+        this.wishlistRepository = wishlistRepository;
+    }
 
     @Transactional(readOnly = true)
     public WishlistResponse getWishlist(String userId) {
         Wishlist wishlist = wishlistRepository.findByUserId(userId)
-                .orElseGet(() -> Wishlist.builder().userId(userId).build());
+                .orElseGet(() -> {
+                    Wishlist w = new Wishlist();
+                    w.setUserId(userId);
+                    return w;
+                });
         
         return mapToResponse(wishlist);
     }
@@ -31,7 +40,11 @@ public class WishlistService {
     public void addItem(String userId, UUID productId) {
         log.info("Adding product {} to wishlist for user {}", productId, userId);
         Wishlist wishlist = wishlistRepository.findByUserId(userId)
-                .orElseGet(() -> wishlistRepository.save(Wishlist.builder().userId(userId).build()));
+                .orElseGet(() -> {
+                    Wishlist w = new Wishlist();
+                    w.setUserId(userId);
+                    return wishlistRepository.save(w);
+                });
         
         wishlist.addItem(productId);
         wishlistRepository.save(wishlist);
@@ -47,13 +60,12 @@ public class WishlistService {
     }
 
     private WishlistResponse mapToResponse(Wishlist wishlist) {
-        // Correcting mapToResponse implementation (internal use of WishlistItemDto)
-        return WishlistResponse.builder()
-                .userId(wishlist.getUserId())
-                .name(wishlist.getName())
-                .items(wishlist.getItems().stream()
-                        .map(item -> new com.fiinx.wishlist.application.dto.WishlistItemDto(item.getProductId(), item.getAddedAt()))
-                        .collect(Collectors.toList()))
-                .build();
+        WishlistResponse response = new WishlistResponse();
+        response.setUserId(wishlist.getUserId());
+        response.setName(wishlist.getName());
+        response.setItems(wishlist.getItems().stream()
+                .map(item -> new WishlistItemDto(item.getProductId(), item.getAddedAt()))
+                .collect(Collectors.toList()));
+        return response;
     }
 }

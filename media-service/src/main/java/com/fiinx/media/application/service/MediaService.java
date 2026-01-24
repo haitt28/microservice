@@ -5,13 +5,14 @@ import com.fiinx.media.domain.entity.Media;
 import com.fiinx.media.domain.entity.MediaType;
 import com.fiinx.media.domain.repository.MediaRepository;
 import com.fiinx.common.exception.BusinessException;
-import com.fiinx.common.exception.NotFoundException;
+import com.fiinx.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -37,7 +38,7 @@ public class MediaService {
         log.info("Uploading file: {} for user: {}", file.getOriginalFilename(), userId);
 
         if (file.isEmpty()) {
-            throw new BusinessException("Cannot upload empty file");
+            throw new BusinessException("EMPTY_FILE", "Cannot upload empty file", HttpStatus.BAD_REQUEST);
         }
 
         String originalFileName = file.getOriginalFilename();
@@ -82,14 +83,14 @@ public class MediaService {
 
         } catch (IOException e) {
             log.error("Failed to upload file", e);
-            throw new BusinessException("Failed to upload file: " + e.getMessage());
+            throw new BusinessException("UPLOAD_FAILED", "Failed to upload file: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Transactional(readOnly = true)
     public MediaResponse getMediaInfo(UUID id) {
         Media media = mediaRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Media not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Media", "id", id));
 
         return MediaResponse.builder()
                 .id(media.getId())
@@ -106,10 +107,10 @@ public class MediaService {
     @Transactional
     public void deleteMedia(UUID id, String userId) {
         Media media = mediaRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Media not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Media", "id", id));
         
         if (!media.getUploadedBy().equals(userId)) {
-             throw new BusinessException("You don't have permission to delete this media");
+             throw new BusinessException("PERMISSION_DENIED", "You don't have permission to delete this media", HttpStatus.FORBIDDEN);
         }
 
         // Mocking file deletion

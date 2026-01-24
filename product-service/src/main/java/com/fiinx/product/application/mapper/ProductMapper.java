@@ -54,7 +54,7 @@ public interface ProductMapper {
     @Mapping(target = "brand", source = "brand")
     @Mapping(target = "category", source = "category")
     @Mapping(target = "variants", source = "variants")
-    @Mapping(target = "images", source = "images")
+    @Mapping(target = "images", source = "images", qualifiedByName = "standardImage")
     @Mapping(target = "primaryImage", expression = "java(toPrimaryImageInfo(product.getPrimaryImage()))")
     ProductDetailResponse toDetailResponse(Product product);
     
@@ -98,6 +98,7 @@ public interface ProductMapper {
     /**
      * Map ProductImage to ImageInfo
      */
+    @Named("standardImage")
     ProductDetailResponse.ImageInfo toImageInfo(ProductImage image);
     
     /**

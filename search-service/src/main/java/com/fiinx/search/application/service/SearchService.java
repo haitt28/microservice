@@ -23,14 +23,7 @@ public class SearchService {
         log.info("Searching for: {}", keyword);
         Page<ProductIndex> page = productIndexRepository.findByNameContainingOrDescriptionContaining(keyword, keyword, pageable);
         
-        return PageResponse.<ProductIndex>builder()
-                .content(page.getContent())
-                .pageNumber(page.getNumber())
-                .pageSize(page.getSize())
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .last(page.isLast())
-                .build();
+        return PageResponse.from(page);
     }
 
     public void indexProduct(ProductIndex product) {

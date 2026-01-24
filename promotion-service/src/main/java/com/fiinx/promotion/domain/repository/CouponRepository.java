@@ -11,6 +11,6 @@ import java.util.UUID;
 @Repository
 public interface CouponRepository extends JpaRepository<Coupon, UUID> {
     Optional<Coupon> findByCode(String code);
-    List<Coupon> findByActiveTrue AndValidFromBeforeAndValidToAfter(LocalDateTime now1, LocalDateTime now2);
+    List<Coupon> findByActiveTrueAndValidFromBeforeAndValidToAfter(LocalDateTime now1, LocalDateTime now2);
     boolean existsByCode(String code);
 }

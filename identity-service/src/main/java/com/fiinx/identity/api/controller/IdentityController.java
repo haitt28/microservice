@@ -2,6 +2,7 @@ package com.fiinx.identity.api.controller;
 
 import com.fiinx.identity.api.dto.*;
 import com.fiinx.identity.application.service.IdentityService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

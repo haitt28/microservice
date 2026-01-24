@@ -32,8 +32,8 @@ public class InventoryReservation {
     @Column(name = "order_id", nullable = false, length = 100)
     private String orderId;
     
-    @Column(name = "product_id", nullable = false, length = 100)
-    private String productId;
+    @Column(name = "product_id", nullable = false)
+    private java.util.UUID productId;
     
     @Column(name = "quantity", nullable = false)
     private int quantity;

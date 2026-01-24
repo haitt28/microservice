@@ -5,11 +5,15 @@ import com.fiinx.common.event.notification.SendNotificationCommand;
 import com.fiinx.common.util.CorrelationIdUtils;
 import com.fiinx.notification.application.service.NotificationService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+import java.time.Instant;
 
 import java.nio.charset.StandardCharsets;
 
@@ -20,10 +24,11 @@ import java.nio.charset.StandardCharsets;
  *   ra khỏi luồng xử lý chính của Order/Payment.
  * - Sử dụng @KafkaListener để tự động lắng nghe các Topic tương ứng.
  */
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class NotificationEventConsumer {
+    
+    private static final Logger log = LoggerFactory.getLogger(NotificationEventConsumer.class);
     
     private final NotificationService notificationService;
     
@@ -41,7 +46,12 @@ public class NotificationEventConsumer {
         
         CorrelationIdUtils.runWithCorrelationId(correlationId, () -> {
             try {
-                notificationService.sendNotification(command);
+                notificationService.sendNotification(
+                    command.getRecipientId(),
+                    command.getTitle(),
+                    command.getMessage(),
+                    command.getType() != null ? command.getType().name() : "SYSTEM"
+                );
                 ack.acknowledge();
                 log.info("Notification sent successfully");
             } catch (Exception e) {

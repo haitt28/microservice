@@ -1,7 +1,7 @@
 package com.fiinx.promotion.application.service;
 
 import com.fiinx.common.exception.BusinessException;
-import com.fiinx.common.exception.NotFoundException;
+import com.fiinx.common.exception.ResourceNotFoundException;
 import com.fiinx.promotion.application.dto.ValidationResult;
 import com.fiinx.promotion.domain.entity.Coupon;
 import com.fiinx.promotion.domain.entity.CouponUsage;
@@ -26,7 +26,7 @@ public class CouponService {
     
     @Transactional(readOnly = true)
     public ValidationResult validateCoupon(String code, BigDecimal orderValue, String userId) {
-        log.info("Validating coupon: code={}, orderValue={}, userId={}", code, order Value, userId);
+        log.info("Validating coupon: code={}, orderValue={}, userId={}", code, orderValue, userId);
         
         Coupon coupon = couponRepository.findByCode(code)
             .orElse(null);
@@ -74,7 +74,7 @@ public class CouponService {
     @Transactional
     public void recordUsage(String code, String userId, UUID orderId, BigDecimal discountAmount) {
         Coupon coupon = couponRepository.findByCode(code)
-            .orElseThrow(() -> new NotFoundException("Coupon not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Coupon", "code", code));
         
         CouponUsage usage = CouponUsage.builder()
             .coupon(coupon)

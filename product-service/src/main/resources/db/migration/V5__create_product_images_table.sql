@@ -7,7 +7,14 @@ CREATE TABLE product_images (
     url VARCHAR(1000) NOT NULL,
     alt_text VARCHAR(255),
     display_order INTEGER NOT NULL DEFAULT 0,
-    is_primary BOOLEAN NOT NULL DEFAULT false
+    is_primary BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255),
+    updated_by VARCHAR(255),
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    deleted_at TIMESTAMPTZ,
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 -- Indexes

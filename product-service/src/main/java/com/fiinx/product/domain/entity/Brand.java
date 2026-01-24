@@ -3,6 +3,7 @@ package com.fiinx.product.domain.entity;
 import com.fiinx.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 /**
  * Senior Note: Brand Entity
@@ -24,7 +25,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Brand extends BaseEntity {
     
     @Column(nullable = false, length = 255)
