@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/shipping")
 @RequiredArgsConstructor
-@Tag(name = "Shipping", description = "Shipping and delivery API")
+@Tag(name = "Giao hàng", description = "API quản lý giao hàng và vận chuyển")
 public class ShippingController {
 
     private final ShippingService shippingService;
 
     @PostMapping("/calculate-fee")
-    @Operation(summary = "Calculate shipping fee", description = "Estimate shipping fee given address and weight")
+    @Operation(summary = "Tính phí giao hàng", description = "Ước tính phí giao hàng dựa trên địa chỉ và trọng lượng")
     public ResponseEntity<ApiResponse<ShippingFeeResponse>> calculateFee(
             @Valid @RequestBody ShippingFeeRequest request
     ) {
@@ -29,15 +29,15 @@ public class ShippingController {
     }
 
     @PostMapping("/create")
-    @Operation(summary = "Create shipment", description = "Create a new shipment and get tracking code (Internal/Admin)")
+    @Operation(summary = "Tạo vận đơn", description = "Tạo một vận đơn mới và lấy mã theo dõi (Nội bộ/Admin)")
     public ResponseEntity<ApiResponse<ShipmentResponse>> createShipment(
             @Valid @RequestBody CreateShipmentRequest request
     ) {
-        return ResponseEntity.ok(ApiResponse.success(shippingService.createShipment(request), "Shipment created successfully"));
+        return ResponseEntity.ok(ApiResponse.success(shippingService.createShipment(request), "Vận đơn đã được tạo thành công"));
     }
 
     @GetMapping("/track/{trackingCode}")
-    @Operation(summary = "Track shipment", description = "Get latest tracking status and details")
+    @Operation(summary = "Theo dõi vận đơn", description = "Lấy trạng thái và chi tiết theo dõi vận đơn mới nhất")
     public ResponseEntity<ApiResponse<ShipmentResponse>> getTrackingInfo(
             @PathVariable String trackingCode
     ) {

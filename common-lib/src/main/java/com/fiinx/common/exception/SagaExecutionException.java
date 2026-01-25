@@ -3,7 +3,7 @@ package com.fiinx.common.exception;
 import org.springframework.http.HttpStatus;
 
 /**
- * Thrown when a saga step fails and compensation is triggered
+ * Ngoại lệ được ném ra khi một bước (Step) trong Saga thất bại và kích hoạt cơ chế bồi hoàn (Compensation).
  */
 public class SagaExecutionException extends BusinessException {
     

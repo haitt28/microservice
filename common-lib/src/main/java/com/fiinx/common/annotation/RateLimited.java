@@ -26,49 +26,49 @@ import java.util.concurrent.TimeUnit;
 public @interface RateLimited {
     
     /**
-     * Rate limit key expression (SpEL supported)
-     * Usually based on user ID, IP, or API key
+     * Biểu thức Rate limit key (hỗ trợ SpEL).
+     * Thường dựa trên User ID, IP, hoặc API key.
      */
     String key();
     
     /**
-     * Maximum number of requests allowed in the time window
+     * Số lượng request tối đa được phép trong cửa sổ thời gian.
      */
     int limit() default 100;
     
     /**
-     * Time window duration
+     * Độ dài của cửa sổ thời gian (Time window).
      */
     long window() default 1;
     
     /**
-     * Time unit for the window
+     * Đơn vị thời gian cho cửa sổ (window).
      */
     TimeUnit timeUnit() default TimeUnit.MINUTES;
     
     /**
-     * Algorithm to use
+     * Thuật toán sử dụng.
      */
     Algorithm algorithm() default Algorithm.SLIDING_WINDOW;
     
     /**
-     * If true, use user ID from security context as key
+     * Nếu true, sẽ sử dụng User ID từ Security Context làm key.
      */
     boolean perUser() default false;
     
     enum Algorithm {
         /**
-         * Token bucket - smoother rate limiting
+         * Token bucket - Giới hạn tần suất mượt mà hơn.
          */
         TOKEN_BUCKET,
         
         /**
-         * Sliding window - more accurate counting
+         * Sliding window - Đếm chính xác hơn.
          */
         SLIDING_WINDOW,
         
         /**
-         * Fixed window - simpler but can have burst at window edges
+         * Fixed window - Đơn giản nhưng có thể bị bùng phát (burst) ở biên cửa sổ.
          */
         FIXED_WINDOW
     }

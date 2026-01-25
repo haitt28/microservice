@@ -10,13 +10,13 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * BEST PRACTICE #5: Base Domain Event
+ * BEST PRACTICE #5: Base Domain Event (Sự kiện miền cơ bản)
  * 
- * - Tất cả events kế thừa từ class này
- * - correlationId để track xuyên suốt saga
- * - eventId là unique identifier
- * - timestamp cho event ordering
- * - version cho schema evolution
+ * - Tất cả các sự kiện (events) đều phải kế thừa từ lớp này.
+ * - correlationId: Dùng để truy vết xuyên suốt vòng đời của một Saga.
+ * - eventId: Mã định danh duy nhất cho mỗi sự kiện (Unique identifier).
+ * - timestamp: Thời điểm xảy ra sự kiện, dùng để sắp xếp thứ tự (Event ordering).
+ * - version: Phiên bản của Schema, hỗ trợ cho việc tiến hóa hệ thống (Schema evolution).
  */
 @Data
 @SuperBuilder
@@ -27,49 +27,49 @@ public abstract class DomainEvent implements Serializable {
     private static final long serialVersionUID = 1L;
     
     /**
-     * Unique event identifier - dùng cho deduplication
+     * Mã định danh duy nhất của sự kiện - dùng cho cơ chế chống trùng lặp (Deduplication).
      */
     private String eventId;
     
     /**
-     * Correlation ID - dùng để track request xuyên suốt saga
-     * Được tạo ở entry point và pass qua tất cả services
+     * Correlation ID - dùng để truy vết yêu cầu xuyên suốt Saga.
+     * Được tạo tại điểm bắt đầu (Entry point) và truyền qua tất cả các Services liên quan.
      */
     private String correlationId;
     
     /**
-     * Causation ID - ID của event gây ra event này
-     * Dùng để build event chain/graph
+     * Causation ID - ID của sự kiện trực tiếp gây ra sự kiện này.
+     * Dùng để xây dựng chuỗi sự kiện hoặc biểu đồ sự kiện (Event chain/graph).
      */
     private String causationId;
     
     /**
-     * Event timestamp
+     * Thời điểm xảy ra sự kiện.
      */
     private Instant timestamp;
     
     /**
-     * Event source - service nào emit event
+     * Nguồn phát sinh sự kiện - Service nào đã phát (emit) sự kiện này.
      */
     private String source;
     
     /**
-     * Event type - full qualified class name hoặc custom type
+     * Loại sự kiện - Thường là tên lớp (Full qualified class name) hoặc một kiểu tùy chỉnh.
      */
     private String eventType;
     
     /**
-     * Schema version cho event - support backward compatibility
+     * Phiên bản Schema của sự kiện - hỗ trợ tính tương thích ngược (Backward compatibility).
      */
     private int version;
     
     /**
-     * User ID who triggered this event (if applicable)
+     * ID của người dùng đã kích hoạt sự kiện này (nếu có).
      */
     private String userId;
     
     /**
-     * Initialize common fields
+     * Khởi tạo các giá trị mặc định cho các trường chung.
      */
     public void initializeDefaults(String source) {
         if (this.eventId == null) {
@@ -90,7 +90,7 @@ public abstract class DomainEvent implements Serializable {
     }
     
     /**
-     * Create a child event that references this event as cause
+     * Tạo một sự kiện con tham chiếu đến sự kiện này như là nguyên nhân gây ra (Cause).
      */
     public void linkAsCause(DomainEvent childEvent) {
         childEvent.setCorrelationId(this.correlationId);

@@ -12,6 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * Senior Note: Chat Service - Dịch vụ trò chuyện thời gian thực.
+ * 
+ * - Lưu trữ tin nhắn vào Database để tra cứu lịch sử.
+ * - Chuyển tiếp tin nhắn đến các Topic WebSocket tương ứng.
+ * - Xử lý theo từng Conversation ID để phân tách phòng chat.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -33,7 +40,7 @@ public class ChatService {
                 
         chatMessageRepository.save(message);
 
-        // Forward message to topic
+        // Chuyển tiếp tin nhắn đến Topic tương ứng (WebSocket)
         messagingTemplate.convertAndSend("/topic/messages." + message.getConversationId(), messageDto);
     }
 }

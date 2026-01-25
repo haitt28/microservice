@@ -16,6 +16,14 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * Senior Note: Coupon Service - Quản lý mã giảm giá.
+ * 
+ * - Kiểm tra tính hợp lệ của Coupon (thời gian, giá trị đơn hàng tối thiểu).
+ * - Kiểm tra giới hạn sử dụng (ví dụ: mỗi user chỉ dùng 1 lần).
+ * - Tính toán số tiền được giảm (Discount calculation).
+ * - Ghi nhận lịch sử sử dụng Coupon.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -34,14 +42,14 @@ public class CouponService {
         if (coupon == null) {
             return ValidationResult.builder()
                 .valid(false)
-                .message("Coupon not found")
+                .message("Không tìm thấy mã giảm giá")
                 .build();
         }
         
         if (!coupon.isValid()) {
             return ValidationResult.builder()
                 .valid(false)
-                .message("Coupon is not valid or has expired")
+                .message("Mã giảm giá không hợp lệ hoặc đã hết hạn")
                 .build();
         }
         
@@ -49,7 +57,7 @@ public class CouponService {
             orderValue.compareTo(coupon.getMinOrderValue()) < 0) {
             return ValidationResult.builder()
                 .valid(false)
-                .message(String.format("Minimum order value is %s", coupon.getMinOrderValue()))
+                .message(String.format("Giá trị đơn hàng tối thiểu phải là %s", coupon.getMinOrderValue()))
                 .build();
         }
         
@@ -57,7 +65,7 @@ public class CouponService {
             couponUsageRepository.existsByCouponIdAndUserId(coupon.getId(), userId)) {
             return ValidationResult.builder()
                 .valid(false)
-                .message("You have already used this coupon")
+                .message("Bạn đã sử dụng mã giảm giá này rồi")
                 .build();
         }
         
@@ -65,7 +73,7 @@ public class CouponService {
         
         return ValidationResult.builder()
             .valid(true)
-            .message("Coupon is valid")
+            .message("Mã giảm giá hợp lệ")
             .discountAmount(discount)
             .couponCode(code)
             .build();

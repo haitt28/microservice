@@ -17,17 +17,17 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 /**
- * Senior Note: Cart Controller
+ * Senior Note: Cart Controller (Bộ điều khiển Giỏ hàng)
  * 
- * - Session-based cart cho guest users
- * - User-based cart cho authenticated users
- * - Auto-merge khi login
+ * - Giỏ hàng dựa trên Session cho khách hàng vãng lai (Guest).
+ * - Giỏ hàng dựa trên User cho người dùng đã đăng nhập.
+ * - Tự động gộp (Merge) giỏ hàng khi người dùng đăng nhập.
  */
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/cart")
 @RequiredArgsConstructor
-@Tag(name = "Cart", description = "Shopping cart API")
+@Tag(name = "Giỏ hàng", description = "API quản lý giỏ hàng")
 public class CartController {
     
     private final CartService cartService;
@@ -36,7 +36,7 @@ public class CartController {
      * Get current cart
      */
     @GetMapping
-    @Operation(summary = "Get cart", description = "Get current user's cart")
+    @Operation(summary = "Lấy giỏ hàng", description = "Lấy thông tin giỏ hàng hiện tại của người dùng")
     public ResponseEntity<ApiResponse<Cart>> getCart(
             @AuthenticationPrincipal Jwt jwt,
             HttpSession session
@@ -51,7 +51,7 @@ public class CartController {
      * Add item to cart
      */
     @PostMapping("/items")
-    @Operation(summary = "Add item", description = "Add item to cart")
+    @Operation(summary = "Thêm sản phẩm", description = "Thêm một sản phẩm vào giỏ hàng")
     public ResponseEntity<ApiResponse<Cart>> addItem(
             @RequestBody CartItem item,
             @AuthenticationPrincipal Jwt jwt,
@@ -60,14 +60,14 @@ public class CartController {
         String cartId = getCartId(jwt, session);
         Cart cart = cartService.addItem(cartId, item);
         
-        return ResponseEntity.ok(ApiResponse.success(cart, "Item added to cart"));
+        return ResponseEntity.ok(ApiResponse.success(cart, "Sản phẩm đã được thêm vào giỏ hàng"));
     }
     
     /**
      * Update item quantity
      */
     @PutMapping("/items/{productId}")
-    @Operation(summary = "Update quantity", description = "Update item quantity in cart")
+    @Operation(summary = "Cập nhật số lượng", description = "Cập nhật số lượng sản phẩm trong giỏ hàng")
     public ResponseEntity<ApiResponse<Cart>> updateQuantity(
             @PathVariable UUID productId,
             @RequestParam int quantity,
@@ -77,14 +77,14 @@ public class CartController {
         String cartId = getCartId(jwt, session);
         Cart cart = cartService.updateItemQuantity(cartId, productId, quantity);
         
-        return ResponseEntity.ok(ApiResponse.success(cart, "Quantity updated"));
+        return ResponseEntity.ok(ApiResponse.success(cart, "Số lượng đã được cập nhật"));
     }
     
     /**
      * Remove item from cart
      */
     @DeleteMapping("/items/{productId}")
-    @Operation(summary = "Remove item", description = "Remove item from cart")
+    @Operation(summary = "Xóa sản phẩm", description = "Xóa sản phẩm khỏi giỏ hàng")
     public ResponseEntity<ApiResponse<Cart>> removeItem(
             @PathVariable UUID productId,
             @AuthenticationPrincipal Jwt jwt,
@@ -93,14 +93,14 @@ public class CartController {
         String cartId = getCartId(jwt, session);
         Cart cart = cartService.removeItem(cartId, productId);
         
-        return ResponseEntity.ok(ApiResponse.success(cart, "Item removed"));
+        return ResponseEntity.ok(ApiResponse.success(cart, "Sản phẩm đã được xóa khỏi giỏ hàng"));
     }
     
     /**
      * Apply coupon
      */
     @PostMapping("/coupon")
-    @Operation(summary = "Apply coupon", description = "Apply discount coupon")
+    @Operation(summary = "Áp dụng mã giảm giá", description = "Áp dụng mã giảm giá (coupon) cho giỏ hàng")
     public ResponseEntity<ApiResponse<Cart>> applyCoupon(
             @RequestParam String code,
             @AuthenticationPrincipal Jwt jwt,
@@ -109,14 +109,14 @@ public class CartController {
         String cartId = getCartId(jwt, session);
         Cart cart = cartService.applyCoupon(cartId, code);
         
-        return ResponseEntity.ok(ApiResponse.success(cart, "Coupon applied"));
+        return ResponseEntity.ok(ApiResponse.success(cart, "Mã giảm giá đã được áp dụng"));
     }
     
     /**
      * Remove coupon
      */
     @DeleteMapping("/coupon")
-    @Operation(summary = "Remove coupon", description = "Remove applied coupon")
+    @Operation(summary = "Gỡ bỏ mã giảm giá", description = "Gỡ bỏ mã giảm giá đã áp dụng")
     public ResponseEntity<ApiResponse<Cart>> removeCoupon(
             @AuthenticationPrincipal Jwt jwt,
             HttpSession session
@@ -124,14 +124,14 @@ public class CartController {
         String cartId = getCartId(jwt, session);
         Cart cart = cartService.removeCoupon(cartId);
         
-        return ResponseEntity.ok(ApiResponse.success(cart, "Coupon removed"));
+        return ResponseEntity.ok(ApiResponse.success(cart, "Mã giảm giá đã được gỡ bỏ"));
     }
     
     /**
      * Clear cart
      */
     @DeleteMapping
-    @Operation(summary = "Clear cart", description = "Remove all items from cart")
+    @Operation(summary = "Xóa sạch giỏ hàng", description = "Xóa tất cả sản phẩm khỏi giỏ hàng")
     public ResponseEntity<ApiResponse<Cart>> clearCart(
             @AuthenticationPrincipal Jwt jwt,
             HttpSession session
@@ -139,14 +139,14 @@ public class CartController {
         String cartId = getCartId(jwt, session);
         Cart cart = cartService.clearCart(cartId);
         
-        return ResponseEntity.ok(ApiResponse.success(cart, "Cart cleared"));
+        return ResponseEntity.ok(ApiResponse.success(cart, "Giỏ hàng đã được xóa sạch"));
     }
     
     /**
      * Merge guest cart (called after login)
      */
     @PostMapping("/merge")
-    @Operation(summary = "Merge cart", description = "Merge session cart to user cart after login")
+    @Operation(summary = "Gộp giỏ hàng", description = "Gộp giỏ hàng từ session vào giỏ hàng của user sau khi đăng nhập")
     public ResponseEntity<ApiResponse<Cart>> mergeCart(
             @AuthenticationPrincipal Jwt jwt,
             HttpSession session
@@ -156,7 +156,7 @@ public class CartController {
         
         Cart cart = cartService.mergeGuestCart(sessionId, userId);
         
-        return ResponseEntity.ok(ApiResponse.success(cart, "Cart merged"));
+        return ResponseEntity.ok(ApiResponse.success(cart, "Giỏ hàng đã được gộp thành công"));
     }
     
     // ==================== Helper Methods ====================

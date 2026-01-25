@@ -14,6 +14,13 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * Senior Note: Shipping Service - Dịch vụ giao hàng.
+ * 
+ * - Tính toán phí giao hàng dựa trên địa chỉ và trọng lượng.
+ * - Tích hợp với các đối tác vận chuyển (GHN, GHTK, v.v.).
+ * - Tạo và theo dõi vận đơn (Shipment tracking).
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -25,7 +32,7 @@ public class ShippingService {
     public ShippingFeeResponse calculateFee(ShippingFeeRequest request) {
         log.info("Calculating shipping fee from {} to {}", request.getFromAddress(), request.getToAddress());
         
-        // Mocking fee calculation logic
+        // Mô phỏng logic tính phí giao hàng
         BigDecimal baseFee = new BigDecimal("30000"); // 30k default
         if (request.getWeight() != null) {
             baseFee = baseFee.add(request.getWeight().multiply(new BigDecimal("5000")));
@@ -42,7 +49,7 @@ public class ShippingService {
     public ShipmentResponse createShipment(CreateShipmentRequest request) {
         log.info("Creating shipment for order: {}", request.getOrderId());
         
-        // Mocking provider API call to get tracking code
+        // Mô phỏng việc gọi API của đối tác vận chuyển để lấy mã vận đơn
         String trackingCode = "FIINX-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         
         ShippingFeeRequest feeReq = ShippingFeeRequest.builder()

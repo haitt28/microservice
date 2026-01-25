@@ -12,6 +12,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Senior Note: Analytics Service - Dịch vụ phân tích dữ liệu.
+ * 
+ * - Thu thập và thống kê dữ liệu đơn hàng, doanh thu theo ngày.
+ * - Theo dõi số lượng khách hàng mới.
+ * - Cung cấp dữ liệu tổng quan cho Dashboard.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor

@@ -26,35 +26,35 @@ import java.util.concurrent.TimeUnit;
 public @interface Idempotent {
     
     /**
-     * HTTP header name containing idempotency key
-     * Takes precedence over key() if present in request
+     * Tên HTTP header chứa Idempotency key.
+     * Được ưu tiên hơn key() nếu tồn tại trong request.
      */
     String keyHeader() default "X-Idempotency-Key";
     
     /**
-     * SpEL expression for idempotency key
-     * Used if header is not present
+     * Biểu thức SpEL cho Idempotency key.
+     * Được sử dụng nếu header không tồn tại.
      */
     String key() default "";
     
     /**
-     * How long to keep idempotency record
+     * Thời gian lưu trữ bản ghi Idempotency.
      */
     long ttl() default 24;
     
     /**
-     * Time unit for TTL
+     * Đơn vị thời gian cho TTL.
      */
     TimeUnit timeUnit() default TimeUnit.HOURS;
     
     /**
-     * If true, return cached response for duplicate requests
-     * If false, just prevent re-execution
+     * Nếu true, trả về response đã cache cho các request trùng lặp.
+     * Nếu false, chỉ ngăn chặn việc thực thi lại.
      */
     boolean cacheResponse() default true;
     
     /**
-     * Key prefix for Redis storage
+     * Tiền tố (prefix) khóa cho bộ nhớ Redis.
      */
     String prefix() default "idempotent:";
 }

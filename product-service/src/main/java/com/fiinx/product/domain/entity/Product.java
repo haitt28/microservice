@@ -11,19 +11,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Senior Note: Product Entity - Aggregate Root
+ * Senior Note: Product Entity - Aggregate Root (Thực thể sản phẩm - Gốc kết tập)
  * 
- * - Đây là Aggregate Root trong DDD pattern
- * - Quản lý toàn bộ lifecycle của Product và các entities liên quan
- * - Sử dụng CascadeType.ALL cho variants và images
- * - Denormalize một số fields (viewCount, soldCount, rating) cho performance
+ * - Đây là Aggregate Root trong mô hình DDD (Domain-Driven Design).
+ * - Quản lý toàn bộ vòng đời (lifecycle) của Sản phẩm và các thực thể liên quan.
+ * - Sử dụng CascadeType.ALL cho các biến thể (variants) và hình ảnh (images).
+ * - Phi chuẩn hóa (Denormalize) một số trường (viewCount, soldCount, rating) để tối ưu hiệu năng (performance).
  * 
  * BEST PRACTICE:
- * - Lazy loading cho relationships để tránh N+1 problem
- * - Orphan removal cho variants và images
- * - Helper methods để đảm bảo business logic consistency
- * - Optimistic locking với @Version từ BaseEntity
- * - Indexes cho các trường thường xuyên query
+ * - Sử dụng Lazy loading cho các mối quan hệ để tránh lỗi N+1 query.
+ * - Orphan removal cho variants và images để tự động dọn dẹp dữ liệu rác.
+ * - Helper methods để đảm bảo tính nhất quán của logic nghiệp vụ (business logic consistency).
+ * - Optimistic locking thông qua trường @Version kế thừa từ BaseEntity.
+ * - Cấu hình Indexes cho các trường thường xuyên được sử dụng để truy vấn.
  */
 @Entity
 @Table(name = "products", indexes = {
@@ -43,7 +43,7 @@ import java.util.List;
 @SuperBuilder
 public class Product extends BaseEntity {
     
-    // ==================== Basic Information ====================
+    // ==================== Thông tin cơ bản (Basic Information) ====================
     
     @Column(nullable = false, length = 500)
     private String name;
@@ -67,7 +67,7 @@ public class Product extends BaseEntity {
     @Column(length = 1000)
     private String shortDescription;
     
-    // ==================== Pricing ====================
+    // ==================== Thông tin giá (Pricing) ====================
     
     /**
      * Giá gốc
@@ -87,7 +87,7 @@ public class Product extends BaseEntity {
     @Column(nullable = false, unique = true, length = 100)
     private String sku;
     
-    // ==================== Relationships ====================
+    // ==================== Các mối quan hệ (Relationships) ====================
     
     /**
      * Thương hiệu
@@ -128,7 +128,7 @@ public class Product extends BaseEntity {
     @Builder.Default
     private List<ProductImage> images = new ArrayList<>();
     
-    // ==================== Metrics (Denormalized) ====================
+    // ==================== Các chỉ số (Metrics - Denormalized) ====================
     
     /**
      * Số lượt xem
@@ -158,7 +158,7 @@ public class Product extends BaseEntity {
     @Builder.Default
     private Integer reviewCount = 0;
     
-    // ==================== Flags ====================
+    // ==================== Các cờ đánh dấu (Flags) ====================
     
     /**
      * Sản phẩm nổi bật (featured)
@@ -180,11 +180,11 @@ public class Product extends BaseEntity {
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
     
-    // ==================== Domain Methods ====================
+    // ==================== Các phương thức Domain (Domain Methods) ====================
     
     /**
      * Thêm variant vào sản phẩm
-     * BEST PRACTICE: Đảm bảo bidirectional relationship consistency
+     * BEST PRACTICE: Đảm bảo tính nhất quán của mối quan hệ hai chiều (Bidirectional relationship consistency).
      */
     public void addVariant(ProductVariant variant) {
         variants.add(variant);

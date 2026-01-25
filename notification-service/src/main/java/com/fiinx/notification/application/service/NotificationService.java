@@ -12,6 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Senior Note: Notification Service - Dịch vụ thông báo.
+ * 
+ * - Gửi thông báo đến người dùng qua WebSocket (Real-time).
+ * - Lưu trữ lịch sử thông báo vào Database.
+ * - Hỗ trợ đánh dấu đã đọc (Mark as read).
+ * - Hỗ trợ phát bản tin chung (Broadcast) cho toàn bộ hệ thống.
+ */
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
@@ -34,7 +42,7 @@ public class NotificationService {
         
         notification = notificationRepository.save(notification);
 
-        // Real-time delivery
+        // Chuyển phát thời gian thực (Real-time delivery) qua WebSocket
         messagingTemplate.convertAndSendToUser(userId, "/queue/notifications", notification);
     }
 
@@ -53,8 +61,8 @@ public class NotificationService {
 
     @Transactional
     public void broadcast(String title, String message) {
-        log.info("Broadcasting notification: {}", title);
-        // In a real scenario, this would iterate or push to a global topic
+        log.info("Đang phát bản tin thông báo: {}", title);
+        // Trong kịch bản thực tế, phương thức này sẽ lặp qua danh sách user hoặc đẩy vào một global topic
         messagingTemplate.convertAndSend("/topic/broadcast", title + ": " + message);
     }
 }

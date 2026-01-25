@@ -32,19 +32,19 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Senior Note: Product Service với comprehensive business logic
+ * Senior Note: Product Service với logic nghiệp vụ toàn diện
  * 
- * - Slug generation tự động từ name
- * - Redis caching cho performance
- * - Event publishing qua Kafka (sẽ implement)
- * - Transactional boundaries rõ ràng
- * - Error handling với custom exceptions
+ * - Tự động tạo Slug (SEO-friendly) từ tên sản phẩm.
+ * - Sử dụng Redis caching để tối ưu hiệu năng.
+ * - Phát bản tin (Event publishing) qua Kafka để đồng bộ dữ liệu.
+ * - Định nghĩa rõ ràng các ranh giới giao dịch (Transactional boundaries).
+ * - Xử lý lỗi tập trung thông qua các Custom Exceptions.
  * 
  * BEST PRACTICE:
- * - @Transactional cho write operations
- * - @Cacheable/@CacheEvict cho Redis
- * - Validate business rules trước khi persist
- * - Rich domain model - để logic trong entities
+ * - Sử dụng @Transactional cho các thao tác ghi (write operations).
+ * - Sử dụng @Cacheable/@CacheEvict để quản lý bộ nhớ đệm Redis.
+ * - Kiểm tra các quy tắc nghiệp vụ (business rules) trước khi lưu dữ liệu (persist).
+ * - Mô hình Rich Domain - đặt logic nghiệp vụ trực tiếp trong các Enities.
  */
 @Slf4j
 @Service
@@ -62,7 +62,7 @@ public class ProductService {
     private static final String CACHE_PREFIX_DETAIL = "product:detail:";
     private static final Duration CACHE_TTL_DETAIL = Duration.ofHours(1);
     
-    // ==================== Create Operations ====================
+    // ==================== Thao tác Tạo (Create Operations) ====================
     
     /**
      * Tạo sản phẩm mới
@@ -139,7 +139,7 @@ public class ProductService {
         return productMapper.toDetailResponse(savedProduct);
     }
     
-    // ==================== Read Operations ====================
+    // ==================== Thao tác Đọc (Read Operations) ====================
     
     /**
      * Lấy sản phẩm theo ID (với cache)
@@ -255,7 +255,7 @@ public class ProductService {
         return PageResponse.from(page.map(productMapper::toDetailResponse));
     }
     
-    // ==================== Update Operations ====================
+    // ==================== Thao tác Cập nhật (Update Operations) ====================
     
     /**
      * Cập nhật sản phẩm
@@ -343,7 +343,7 @@ public class ProductService {
         return productMapper.toDetailResponse(product);
     }
     
-    // ==================== Delete Operations ====================
+    // ==================== Thao tác Xóa (Delete Operations) ====================
     
     /**
      * Soft delete sản phẩm
@@ -368,7 +368,7 @@ public class ProductService {
         log.info("Product soft deleted: id={}", id);
     }
     
-    // ==================== Helper Methods ====================
+    // ==================== Các phương thức bổ trợ (Helper Methods) ====================
     
     /**
      * Generate SEO-friendly slug từ name

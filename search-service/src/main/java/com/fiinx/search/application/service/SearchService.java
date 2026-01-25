@@ -12,6 +12,13 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Senior Note: Search Service - Dịch vụ tìm kiếm (Vận hành bằng Elasticsearch).
+ * 
+ * - Cung cấp khả năng tìm kiếm sản phẩm theo từ khóa (Name, Description).
+ * - Đồng bộ hóa chỉ mục (Indexing) khi sản phẩm thay đổi.
+ * - Hỗ trợ phân trang (Pagination) cho kết quả tìm kiếm.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor

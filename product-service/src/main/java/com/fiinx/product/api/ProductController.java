@@ -27,52 +27,52 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Senior Note: Product Controller
+ * Senior Note: Product Controller (Bộ điều khiển Sản phẩm)
  * 
- * - Public endpoints cho product listing (no auth)
- * - Admin endpoints cho CRUD operations (ADMIN role)
- * - Rate limiting cho security
- * - OpenAPI documentation
+ * - Các endpoint công khai (Public) phục vụ liệt kê sản phẩm (không yêu cầu xác thực).
+ * - Các endpoint quản trị (Admin) phục vụ thao tác CRUD (yêu cầu role ADMIN).
+ * - Cơ chế Rate limiting được áp dụng để đảm bảo bảo mật và hiệu năng.
+ * - Tài liệu API được cấu hình qua OpenAPI (Swagger).
  * 
  * BEST PRACTICE:
- * - Separate public/admin endpoints clearly
- * - Use @PageableDefault cho pagination
- * - Rate limiting trên expensive operations
- * - Proper HTTP status codes
+ * - Phân tách rõ ràng giữa các endpoint công khai và quản trị.
+ * - Sử dụng @PageableDefault để cấu hình mặc định cho việc phân trang.
+ * - Áp dụng Rate limiting cho các thao tác tiêu tốn nhiều tài nguyên (expensive operations).
+ * - Trả về mã lỗi HTTP (HTTP status codes) phù hợp cho từng trường hợp.
  */
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
-@Tag(name = "Products", description = "Product management API")
+@Tag(name = "Sản phẩm", description = "API quản lý sản phẩm")
 public class ProductController {
     
     private final ProductService productService;
     
-    // ==================== Public Endpoints ====================
+    // ==================== Các Endpoint Công Khai (Public Endpoints) ====================
     
     /**
      * Get all products với filters
      */
     @GetMapping
-    @Operation(summary = "Get products", description = "Get paginated list of products with optional filters")
+    @Operation(summary = "Lấy danh sách sản phẩm", description = "Lấy danh sách sản phẩm phân trang với các bộ lọc tùy chọn")
     public ResponseEntity<ApiResponse<PageResponse<ProductDetailResponse>>> getProducts(
-            @Parameter(description = "Filter by category ID")
+            @Parameter(description = "Lọc theo ID danh mục")
             @RequestParam(required = false) UUID categoryId,
             
-            @Parameter(description = "Filter by brand ID")
+            @Parameter(description = "Lọc theo ID thương hiệu")
             @RequestParam(required = false) UUID brandId,
             
-            @Parameter(description = "Minimum price")
+            @Parameter(description = "Giá tối thiểu")
             @RequestParam(required = false) BigDecimal minPrice,
             
-            @Parameter(description = "Maximum price")
+            @Parameter(description = "Giá tối đa")
             @RequestParam(required = false) BigDecimal maxPrice,
             
-            @Parameter(description = "Product status (default: ACTIVE)")
+            @Parameter(description = "Trạng thái sản phẩm (mặc định: ACTIVE)")
             @RequestParam(required = false, defaultValue = "ACTIVE") ProductStatus status,
             
-            @Parameter(description = "Filter featured products only")
+            @Parameter(description = "Chỉ lấy các sản phẩm nổi bật (featured)")
             @RequestParam(required = false) Boolean featured,
             
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
@@ -88,7 +88,7 @@ public class ProductController {
      * Get product by ID
      */
     @GetMapping("/{id}")
-    @Operation(summary = "Get product by ID", description = "Get detailed product information")
+    @Operation(summary = "Lấy sản phẩm theo ID", description = "Lấy thông tin chi tiết của một sản phẩm")
     public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductById(
             @PathVariable UUID id
     ) {
@@ -100,7 +100,7 @@ public class ProductController {
      * Get product by slug
      */
     @GetMapping("/slug/{slug}")
-    @Operation(summary = "Get product by slug", description = "Get product by SEO-friendly slug")
+    @Operation(summary = "Lấy sản phẩm theo slug", description = "Lấy thông tin sản phẩm thông qua slug thân thiện với SEO")
     public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductBySlug(
             @PathVariable String slug
     ) {
@@ -112,9 +112,9 @@ public class ProductController {
      * Search products
      */
     @GetMapping("/search")
-    @Operation(summary = "Search products", description = "Full-text search for products")
+    @Operation(summary = "Tìm kiếm sản phẩm", description = "Tìm kiếm toàn văn (Full-text search) cho các sản phẩm")
     public ResponseEntity<ApiResponse<PageResponse<ProductDetailResponse>>> searchProducts(
-            @Parameter(description = "Search keyword")
+            @Parameter(description = "Từ khóa tìm kiếm")
             @RequestParam String q,
             
             @PageableDefault(size = 20, sort = "soldCount", direction = Sort.Direction.DESC) Pageable pageable
@@ -127,7 +127,7 @@ public class ProductController {
      * Get featured products
      */
     @GetMapping("/featured")
-    @Operation(summary = "Get featured products", description = "Get list of featured products")
+    @Operation(summary = "Lấy các sản phẩm nổi bật", description = "Lấy danh sách các sản phẩm đang được làm nổi bật (featured)")
     public ResponseEntity<ApiResponse<PageResponse<ProductDetailResponse>>> getFeaturedProducts(
             @PageableDefault(size = 10, sort = "displayOrder", direction = Sort.Direction.ASC) Pageable pageable
     ) {
@@ -139,7 +139,7 @@ public class ProductController {
      * Get bestsellers
      */
     @GetMapping("/bestsellers")
-    @Operation(summary = "Get bestsellers", description = "Get top selling products")
+    @Operation(summary = "Lấy sản phẩm bán chạy", description = "Lấy danh sách các sản phẩm bán chạy nhất")
     public ResponseEntity<ApiResponse<PageResponse<ProductDetailResponse>>> getBestSellers(
             @PageableDefault(size = 10) Pageable pageable
     ) {
@@ -151,7 +151,7 @@ public class ProductController {
      * Get new arrivals
      */
     @GetMapping("/new-arrivals")
-    @Operation(summary = "Get new arrivals", description = "Get newly added products")
+    @Operation(summary = "Lấy sản phẩm mới", description = "Lấy danh sách các sản phẩm mới được thêm vào")
     public ResponseEntity<ApiResponse<PageResponse<ProductDetailResponse>>> getNewArrivals(
             @PageableDefault(size = 10, sort = "publishedAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
@@ -163,7 +163,7 @@ public class ProductController {
      * Get related products
      */
     @GetMapping("/{id}/related")
-    @Operation(summary = "Get related products", description = "Get products in same category")
+    @Operation(summary = "Lấy các sản phẩm liên quan", description = "Lấy danh sách các sản phẩm cùng danh mục")
     public ResponseEntity<ApiResponse<PageResponse<ProductDetailResponse>>> getRelatedProducts(
             @PathVariable UUID id,
             @PageableDefault(size = 6) Pageable pageable
@@ -172,7 +172,7 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success(products));
     }
     
-    // ==================== Admin Endpoints ====================
+    // ==================== Các Endpoint Quản Trị (Admin Endpoints) ====================
     
     /**
      * Create new product (Admin only)
@@ -181,7 +181,7 @@ public class ProductController {
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearer-jwt")
     @RateLimited(key = "'admin:product:create'", limit = 100, window = 1, timeUnit = TimeUnit.HOURS)
-    @Operation(summary = "Create product", description = "Create a new product (Admin only)")
+    @Operation(summary = "Tạo sản phẩm mới", description = "Tạo một sản phẩm mới (Chỉ dành cho Admin)")
     public ResponseEntity<ApiResponse<ProductDetailResponse>> createProduct(
             @Valid @RequestBody CreateProductRequest request
     ) {
@@ -190,7 +190,7 @@ public class ProductController {
         
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(product, "Product created successfully"));
+                .body(ApiResponse.success(product, "Sản phẩm đã được tạo thành công"));
     }
     
     /**
@@ -199,7 +199,7 @@ public class ProductController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearer-jwt")
-    @Operation(summary = "Update product", description = "Update existing product (Admin only)")
+    @Operation(summary = "Cập nhật sản phẩm", description = "Cập nhật thông tin sản phẩm hiện có (Chỉ dành cho Admin)")
     public ResponseEntity<ApiResponse<ProductDetailResponse>> updateProduct(
             @PathVariable UUID id,
             @Valid @RequestBody CreateProductRequest request
@@ -207,7 +207,7 @@ public class ProductController {
         log.info("Admin updating product: id={}", id);
         ProductDetailResponse product = productService.updateProduct(id, request);
         
-        return ResponseEntity.ok(ApiResponse.success(product, "Product updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(product, "Sản phẩm đã được cập nhật thành công"));
     }
     
     /**
@@ -216,14 +216,14 @@ public class ProductController {
     @PutMapping("/{id}/publish")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearer-jwt")
-    @Operation(summary = "Publish product", description = "Make product active and visible (Admin only)")
+    @Operation(summary = "Xuất bản sản phẩm", description = "Kích hoạt sản phẩm để hiển thị trên website (Chỉ dành cho Admin)")
     public ResponseEntity<ApiResponse<ProductDetailResponse>> publishProduct(
             @PathVariable UUID id
     ) {
         log.info("Admin publishing product: id={}", id);
         ProductDetailResponse product = productService.publishProduct(id);
         
-        return ResponseEntity.ok(ApiResponse.success(product, "Product published successfully"));
+        return ResponseEntity.ok(ApiResponse.success(product, "Sản phẩm đã được xuất bản thành công"));
     }
     
     /**
@@ -232,14 +232,14 @@ public class ProductController {
     @PutMapping("/{id}/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearer-jwt")
-    @Operation(summary = "Deactivate product", description = "Make product inactive (Admin only)")
+    @Operation(summary = "Ngừng kích hoạt sản phẩm", description = "Ẩn sản phẩm khỏi website (Chỉ dành cho Admin)")
     public ResponseEntity<ApiResponse<ProductDetailResponse>> deactivateProduct(
             @PathVariable UUID id
     ) {
         log.info("Admin deactivating product: id={}", id);
         ProductDetailResponse product = productService.deactivateProduct(id);
         
-        return ResponseEntity.ok(ApiResponse.success(product, "Product deactivated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(product, "Sản phẩm đã được ngừng kích hoạt thành công"));
     }
     
     /**
@@ -248,13 +248,13 @@ public class ProductController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearer-jwt")
-    @Operation(summary = "Delete product", description = "Soft delete product (Admin only)")
+    @Operation(summary = "Xóa sản phẩm", description = "Xóa mềm sản phẩm (Chỉ dành cho Admin)")
     public ResponseEntity<ApiResponse<Void>> deleteProduct(
             @PathVariable UUID id
     ) {
         log.info("Admin deleting product: id={}", id);
         productService.deleteProduct(id);
         
-        return ResponseEntity.ok(ApiResponse.success(null, "Product deleted successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Sản phẩm đã được xóa thành công"));
     }
 }

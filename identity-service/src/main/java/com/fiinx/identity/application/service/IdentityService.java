@@ -89,8 +89,8 @@ public class IdentityService {
             kafkaTemplate.send(userCreatedTopic, request.getUsername(), event);
             log.info("Published UserCreatedEvent to Kafka for user: {}", request.getUsername());
         } else {
-            log.error("Failed to create user. Status: {}", response.getStatus());
-            throw new RuntimeException("Could not create user in Keycloak");
+            log.error("Tạo người dùng thất bại. Mã trạng thái: {}", response.getStatus());
+            throw new RuntimeException("Không thể tạo người dùng trong Keycloak");
         }
     }
 
@@ -220,9 +220,9 @@ public class IdentityService {
         try {
             RoleRepresentation role = adminKeycloak.realm(realm).roles().get(roleName).toRepresentation();
             adminKeycloak.realm(realm).users().get(userId).roles().realmLevel().add(Collections.singletonList(role));
-            log.info("Assigned default role {} to user {}", roleName, userId);
+            log.info("Đã gán Role mặc định {} cho người dùng {}", roleName, userId);
         } catch (NotFoundException e) {
-            log.warn("Default role {} not found in realm", roleName);
+            log.warn("Role mặc định {} không tồn tại trong Realm", roleName);
         }
     }
 

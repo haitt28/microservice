@@ -31,15 +31,15 @@ public final class CorrelationIdUtils {
     }
     
     /**
-     * Generate new correlation ID
+     * Tạo mới Correlation ID.
      */
     public static String generate() {
         return UUID.randomUUID().toString();
     }
     
     /**
-     * Get correlation ID from current request context
-     * Generate new one if not present
+     * Lấy correlation ID từ request context hiện tại.
+     * Tự động tạo mới nếu không tìm thấy.
      */
     public static String getOrGenerate() {
         return getFromMDC()
@@ -48,14 +48,14 @@ public final class CorrelationIdUtils {
     }
     
     /**
-     * Get from MDC (SLF4J Mapped Diagnostic Context)
+     * Lấy từ MDC (SLF4J Mapped Diagnostic Context).
      */
     public static Optional<String> getFromMDC() {
         return Optional.ofNullable(MDC.get(CORRELATION_ID_MDC_KEY));
     }
     
     /**
-     * Get from current HTTP request header
+     * Lấy từ HTTP request header hiện tại.
      */
     public static Optional<String> getFromRequest() {
         try {
@@ -66,13 +66,13 @@ public final class CorrelationIdUtils {
                 return Optional.ofNullable(correlationId);
             }
         } catch (Exception ignored) {
-            // Not in HTTP request context
+            // Không nằm trong HTTP request context
         }
         return Optional.empty();
     }
     
     /**
-     * Set correlation ID in MDC
+     * Đưa correlation ID vào MDC.
      */
     public static void setInMDC(String correlationId) {
         if (correlationId != null) {
@@ -81,14 +81,14 @@ public final class CorrelationIdUtils {
     }
     
     /**
-     * Clear correlation ID from MDC
+     * Xóa correlation ID khỏi MDC.
      */
     public static void clearMDC() {
         MDC.remove(CORRELATION_ID_MDC_KEY);
     }
     
     /**
-     * Add correlation ID to HTTP headers
+     * Thêm correlation ID vào HTTP headers.
      */
     public static HttpHeaders addToHeaders(HttpHeaders headers, String correlationId) {
         if (headers == null) {
@@ -99,7 +99,7 @@ public final class CorrelationIdUtils {
     }
     
     /**
-     * Execute with correlation ID set in MDC
+     * Thực thi hành động với correlation ID đã được thiết lập trong MDC.
      */
     public static void runWithCorrelationId(String correlationId, Runnable action) {
         String previous = MDC.get(CORRELATION_ID_MDC_KEY);

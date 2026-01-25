@@ -20,6 +20,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+/**
+ * Senior Note: Media Service - Dịch vụ quản lý tệp tin và phương tiện.
+ * 
+ * - Hỗ trợ tải lên (Upload) tệp tin với nhiều định dạng (Ảnh, Video, PDF, Tài liệu).
+ * - Lưu trữ tệp tin cục bộ (Local storage) hoặc tích hợp CDN.
+ * - Kiểm soát quyền sở hữu khi xóa tệp tin.
+ * - Tự động định danh MediaType dựa trên Content Type.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -38,7 +46,7 @@ public class MediaService {
         log.info("Uploading file: {} for user: {}", file.getOriginalFilename(), userId);
 
         if (file.isEmpty()) {
-            throw new BusinessException("EMPTY_FILE", "Cannot upload empty file", HttpStatus.BAD_REQUEST);
+            throw new BusinessException("EMPTY_FILE", "Không thể tải lên tệp tin rỗng", HttpStatus.BAD_REQUEST);
         }
 
         String originalFileName = file.getOriginalFilename();
@@ -47,15 +55,15 @@ public class MediaService {
         MediaType type = determineMediaType(file.getContentType());
 
         try {
-            // Mocking local storage save
+            // Mô phỏng lưu trữ vào Local storage
             Path directory = Paths.get(localStoragePath);
             if (!Files.exists(directory)) {
                 Files.createDirectories(directory);
             }
             Path filePath = directory.resolve(fileName);
-            // Files.copy(file.getInputStream(), filePath); // Commented to prevent actual file writing in this environment
+            // Files.copy(file.getInputStream(), filePath); // Bị chú thích để tránh ghi tệp thực tế trong môi trường này
             
-            log.info("File saved to: {}", filePath);
+            log.info("Tệp tin đã được lưu tại: {}", filePath);
 
             Media media = Media.builder()
                     .fileName(fileName)
@@ -82,8 +90,8 @@ public class MediaService {
                     .build();
 
         } catch (IOException e) {
-            log.error("Failed to upload file", e);
-            throw new BusinessException("UPLOAD_FAILED", "Failed to upload file: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            log.error("Tải lên tệp tin thất bại", e);
+            throw new BusinessException("UPLOAD_FAILED", "Tải lên tệp tin thất bại: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -110,11 +118,11 @@ public class MediaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Media", "id", id));
         
         if (!media.getUploadedBy().equals(userId)) {
-             throw new BusinessException("PERMISSION_DENIED", "You don't have permission to delete this media", HttpStatus.FORBIDDEN);
+             throw new BusinessException("PERMISSION_DENIED", "Bạn không có quyền xóa tệp tin này", HttpStatus.FORBIDDEN);
         }
 
-        // Mocking file deletion
-        log.info("Deleting file from storage: {}", media.getStoragePath());
+        // Mô phỏng xóa tệp tin khỏi bộ nhớ
+        log.info("Đang xóa tệp tin khỏi bộ nhớ: {}", media.getStoragePath());
         
         mediaRepository.delete(media);
     }

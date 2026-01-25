@@ -24,14 +24,14 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-@Tag(name = "Promotions", description = "Promotion and coupon API")
+@Tag(name = "Khuyến mãi", description = "API quản lý khuyến mãi và mã giảm giá")
 public class PromotionController {
     
     private final CouponService couponService;
     private final CouponRepository couponRepository;
     
     @PostMapping("/promotions/validate")
-    @Operation(summary = "Validate coupon", description = "Validate coupon code for order")
+    @Operation(summary = "Kiểm tra mã giảm giá", description = "Kiểm tra tính hợp lệ của mã giảm giá cho đơn hàng")
     public ResponseEntity<ApiResponse<ValidationResult>> validateCoupon(
             @RequestParam String code,
             @RequestParam BigDecimal orderValue,
@@ -41,14 +41,14 @@ public class PromotionController {
         ValidationResult result = couponService.validateCoupon(code, orderValue, userId);
         
         if (result.isValid()) {
-            return ResponseEntity.ok(ApiResponse.success(result, "Coupon is valid"));
+            return ResponseEntity.ok(ApiResponse.success(result, "Mã giảm giá hợp lệ"));
         } else {
             return ResponseEntity.ok(ApiResponse.error("INVALID_COUPON", result.getMessage()));
         }
     }
     
     @GetMapping("/promotions/active")
-    @Operation(summary = "Get active promotions", description = "Get all currently active promotions")
+    @Operation(summary = "Lấy các khuyến mãi đang hoạt động", description = "Lấy danh sách tất cả các khuyến mãi đang có hiệu lực")
     public ResponseEntity<ApiResponse<List<Coupon>>> getActivePromotions() {
         LocalDateTime now = LocalDateTime.now();
         List<Coupon> coupons = couponRepository.findByActiveTrueAndValidFromBeforeAndValidToAfter(now, now);
@@ -57,20 +57,20 @@ public class PromotionController {
     
     @PostMapping("/admin/coupons")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Create coupon", description = "Create new coupon (Admin)")
+    @Operation(summary = "Tạo mã giảm giá", description = "Tạo mã giảm giá mới (Chỉ dành cho Admin)")
     public ResponseEntity<ApiResponse<Coupon>> createCoupon(@RequestBody Coupon coupon) {
         if (couponRepository.existsByCode(coupon.getCode())) {
             return ResponseEntity.badRequest()
-                .body(ApiResponse.error("DUPLICATE_CODE", "Coupon code already exists"));
+                .body(ApiResponse.error("DUPLICATE_CODE", "Mã giảm giá này đã tồn tại"));
         }
         
         Coupon saved = couponRepository.save(coupon);
-        return ResponseEntity.ok(ApiResponse.success(saved, "Coupon created"));
+        return ResponseEntity.ok(ApiResponse.success(saved, "Mã giảm giá đã được tạo"));
     }
     
     @GetMapping("/admin/coupons")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "List coupons", description = "List all coupons (Admin)")
+    @Operation(summary = "Liệt kê mã giảm giá", description = "Liệt kê tất cả các mã giảm giá (Chỉ dành cho Admin)")
     public ResponseEntity<ApiResponse<List<Coupon>>> listCoupons() {
         List<Coupon> coupons = couponRepository.findAll();
         return ResponseEntity.ok(ApiResponse.success(coupons));
@@ -78,9 +78,9 @@ public class PromotionController {
     
     @DeleteMapping("/admin/coupons/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Delete coupon", description = "Delete coupon (Admin)")
+    @Operation(summary = "Xóa mã giảm giá", description = "Xóa mã giảm giá (Chỉ dành cho Admin)")
     public ResponseEntity<ApiResponse<Void>> deleteCoupon(@PathVariable UUID id) {
         couponRepository.deleteById(id);
-        return ResponseEntity.ok(ApiResponse.success(null, "Coupon deleted"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Mã giảm giá đã được xóa"));
     }
 }

@@ -27,18 +27,18 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
- * BEST PRACTICE #24: REST Controller
+ * BEST PRACTICE #24: REST Controller (Bộ điều khiển REST)
  * 
- * - Clear API documentation với OpenAPI
- * - Rate limiting cho public endpoints
- * - Security với method-level authorization
- * - Proper HTTP status codes
+ * - Tài liệu API rõ ràng với OpenAPI.
+ * - Áp dụng Rate limiting cho các endpoint công khai.
+ * - Bảo mật với phân quyền ở mức phương thức (method-level authorization).
+ * - Sử dụng các mã phản hồi HTTP (HTTP status codes) phù hợp.
  */
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
-@Tag(name = "Orders", description = "Order management API")
+@Tag(name = "Đơn hàng", description = "API quản lý đơn hàng")
 @SecurityRequirement(name = "bearer-jwt")
 public class OrderController {
     
@@ -50,7 +50,7 @@ public class OrderController {
     @PostMapping
     @RateLimited(key = "'order:create:' + #jwt.subject", limit = 10, window = 1, timeUnit = TimeUnit.MINUTES)
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @Operation(summary = "Create order", description = "Create a new order for the authenticated user")
+    @Operation(summary = "Tạo đơn hàng", description = "Tạo một đơn hàng mới cho người dùng đã xác thực")
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
             @Valid @RequestBody CreateOrderRequest request,
             @AuthenticationPrincipal Jwt jwt) {
@@ -67,7 +67,7 @@ public class OrderController {
         
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(order, "Order created successfully"));
+                .body(ApiResponse.success(order, "Đơn hàng đã được tạo thành công"));
     }
     
     /**
@@ -75,7 +75,7 @@ public class OrderController {
      */
     @GetMapping("/{orderId}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @Operation(summary = "Get order", description = "Get order by ID")
+    @Operation(summary = "Lấy đơn hàng", description = "Lấy thông tin đơn hàng theo ID")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrder(
             @PathVariable UUID orderId,
             @AuthenticationPrincipal Jwt jwt) {
@@ -86,7 +86,7 @@ public class OrderController {
         if (!jwt.getClaimAsStringList("roles").contains("ADMIN") &&
             !order.getCustomerId().equals(jwt.getSubject())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ApiResponse.error("ACCESS_DENIED", "You don't have access to this order"));
+                    .body(ApiResponse.error("ACCESS_DENIED", "Bạn không có quyền truy cập vào đơn hàng này"));
         }
         
         return ResponseEntity.ok(ApiResponse.success(order));
@@ -97,7 +97,7 @@ public class OrderController {
      */
     @GetMapping("/by-number/{orderNumber}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @Operation(summary = "Get order by number", description = "Get order by order number")
+    @Operation(summary = "Lấy đơn hàng theo mã số", description = "Lấy thông tin đơn hàng theo mã đơn hàng (order number)")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrderByNumber(
             @PathVariable String orderNumber,
             @AuthenticationPrincipal Jwt jwt) {
@@ -119,7 +119,7 @@ public class OrderController {
      */
     @GetMapping("/my-orders")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @Operation(summary = "Get my orders", description = "Get paginated list of current user's orders")
+    @Operation(summary = "Lấy đơn hàng của tôi", description = "Lấy danh sách đơn hàng phân trang của người dùng hiện tại")
     public ResponseEntity<ApiResponse<PageResponse<OrderResponse>>> getMyOrders(
             @AuthenticationPrincipal Jwt jwt,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -134,10 +134,10 @@ public class OrderController {
      */
     @PostMapping("/{orderNumber}/cancel")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @Operation(summary = "Cancel order", description = "Cancel an existing order")
+    @Operation(summary = "Hủy đơn hàng", description = "Hủy một đơn hàng hiện có")
     public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(
             @PathVariable String orderNumber,
-            @RequestParam(defaultValue = "Customer requested cancellation") String reason,
+            @RequestParam(defaultValue = "Khách hàng yêu cầu hủy đơn") String reason,
             @AuthenticationPrincipal Jwt jwt) {
         
         // Verify ownership first
@@ -150,7 +150,7 @@ public class OrderController {
         
         OrderResponse order = orderService.cancelOrder(orderNumber, reason);
         
-        return ResponseEntity.ok(ApiResponse.success(order, "Order cancelled successfully"));
+        return ResponseEntity.ok(ApiResponse.success(order, "Đơn hàng đã được hủy thành công"));
     }
     
     /**
@@ -158,7 +158,7 @@ public class OrderController {
      */
     @GetMapping("/{orderId}/tracking")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @Operation(summary = "Get order tracking", description = "Get detailed order tracking timeline")
+    @Operation(summary = "Lấy lịch trình đơn hàng", description = "Lấy chi tiết lịch trình theo dõi đơn hàng (tracking timeline)")
     public ResponseEntity<ApiResponse<java.util.List<com.fiinx.order.application.dto.OrderTimelineResponse>>> getOrderTracking(
             @PathVariable UUID orderId) {
         return ResponseEntity.ok(ApiResponse.success(orderService.getOrderTimeline(orderId)));
@@ -169,21 +169,21 @@ public class OrderController {
      */
     @GetMapping("/{orderId}/invoice")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @Operation(summary = "Get order invoice", description = "Generate and return order invoice (Simulated PDF URL)")
+    @Operation(summary = "Lấy hóa đơn đơn hàng", description = "Tạo và trả về hóa đơn đơn hàng (URL PDF giả lập)")
     public ResponseEntity<ApiResponse<String>> getOrderInvoice(@PathVariable UUID orderId) {
         // Mock generation
         String mockInvoiceUrl = "https://fiinx.com/invoices/INV-" + orderId + ".pdf";
-        return ResponseEntity.ok(ApiResponse.success(mockInvoiceUrl, "Invoice generated"));
+        return ResponseEntity.ok(ApiResponse.success(mockInvoiceUrl, "Hóa đơn đã được tạo"));
     }
 
-    // ==================== Admin Endpoints ====================
+    // ==================== Các Endpoint Quản Trị (Admin Endpoints) ====================
     
     /**
      * Get all orders (Admin only)
      */
     @GetMapping("/admin/all")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "List all orders (Admin)", description = "Get paginated list of all orders with filters")
+    @Operation(summary = "Liệt kê tất cả đơn hàng (Admin)", description = "Lấy danh sách tất cả các đơn hàng phân trang với bộ lọc")
     public ResponseEntity<ApiResponse<PageResponse<OrderResponse>>> getAllOrders(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         // For simplicity, we use the existing find all but could add complex filters
@@ -195,7 +195,7 @@ public class OrderController {
      */
     @GetMapping("/customer/{customerId}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Get customer orders (Admin)", description = "Get orders for a specific customer")
+    @Operation(summary = "Lấy đơn hàng của khách hàng (Admin)", description = "Lấy danh sách đơn hàng cho một khách hàng cụ thể")
     public ResponseEntity<ApiResponse<PageResponse<OrderResponse>>> getCustomerOrders(
             @PathVariable String customerId,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {

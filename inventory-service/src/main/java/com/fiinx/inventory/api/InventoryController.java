@@ -17,32 +17,32 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/inventory")
 @RequiredArgsConstructor
-@Tag(name = "Inventory", description = "Stock and inventory management API")
+@Tag(name = "Kho hàng", description = "API quản lý tồn kho và kho hàng")
 public class InventoryController {
 
     private final InventoryService inventoryService;
 
     @GetMapping("/check/{productId}")
-    @Operation(summary = "Check stock", description = "Check if a product is in stock and available quantity")
+    @Operation(summary = "Kiểm tra tồn kho", description = "Kiểm tra xem sản phẩm còn hàng không và số lượng còn lại")
     public ResponseEntity<ApiResponse<StockCheckResponse>> checkStock(@PathVariable UUID productId) {
         return ResponseEntity.ok(ApiResponse.success(inventoryService.checkStock(productId)));
     }
 
     @PostMapping("/admin/import")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Import stock", description = "Add stock to a product (Admin only)")
+    @Operation(summary = "Nhập kho", description = "Thêm hàng vào kho cho một sản phẩm (Chỉ dành cho Admin)")
     public ResponseEntity<ApiResponse<Void>> importStock(
             @RequestParam UUID productId,
             @RequestParam Integer quantity,
             @RequestParam(required = false) String note
     ) {
         inventoryService.importStock(productId, quantity, note);
-        return ResponseEntity.ok(ApiResponse.success(null, "Stock imported successfully"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Nhập kho thành công"));
     }
 
     @GetMapping("/admin/low-stock")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Get low stock items", description = "List products with stock below threshold (Admin only)")
+    @Operation(summary = "Lấy danh sách hàng sắp hết", description = "Liệt kê các sản phẩm có số lượng dưới ngưỡng quy định (Chỉ dành cho Admin)")
     public ResponseEntity<ApiResponse<List<Inventory>>> getLowStock(@RequestParam(defaultValue = "10") Integer threshold) {
         return ResponseEntity.ok(ApiResponse.success(inventoryService.getLowStockItems(threshold)));
     }

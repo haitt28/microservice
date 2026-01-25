@@ -30,7 +30,7 @@ public class IdentityController {
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody RegistrationRequest request) {
         identityService.registerUser(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body("Người dùng đã được đăng ký thành công");
     }
 
     /**
@@ -82,7 +82,7 @@ public class IdentityController {
 
     @PutMapping("/admin/users/{userId}/lock")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Lock user", description = "Disable user account in Keycloak")
+    @Operation(summary = "Khóa người dùng", description = "Vô hiệu hóa tài khoản người dùng trong Keycloak")
     public ResponseEntity<Void> lockUser(@PathVariable String userId) {
         identityService.lockUser(userId);
         return ResponseEntity.noContent().build();
@@ -90,7 +90,7 @@ public class IdentityController {
 
     @PutMapping("/admin/users/{userId}/unlock")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Unlock user", description = "Enable user account in Keycloak")
+    @Operation(summary = "Mở khóa người dùng", description = "Kích hoạt lại tài khoản người dùng trong Keycloak")
     public ResponseEntity<Void> unlockUser(@PathVariable String userId) {
         identityService.unlockUser(userId);
         return ResponseEntity.noContent().build();

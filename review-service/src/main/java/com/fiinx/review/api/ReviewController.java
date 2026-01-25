@@ -25,13 +25,13 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-@Tag(name = "Reviews", description = "Product review API")
+@Tag(name = "Đánh giá", description = "API quản lý đánh giá sản phẩm")
 public class ReviewController {
 
     private final ReviewService reviewService;
 
     @GetMapping("/products/{productId}/reviews")
-    @Operation(summary = "Get product reviews", description = "Get approved reviews for a specific product")
+    @Operation(summary = "Lấy danh sách đánh giá", description = "Lấy danh sách các đánh giá đã được duyệt cho một sản phẩm cụ thể")
     public ResponseEntity<ApiResponse<PageResponse<ReviewResponse>>> getProductReviews(
             @PathVariable UUID productId,
             @PageableDefault(size = 10) Pageable pageable
@@ -40,7 +40,7 @@ public class ReviewController {
     }
 
     @PostMapping("/reviews")
-    @Operation(summary = "Create review", description = "Create a product review (requires authentication)")
+    @Operation(summary = "Tạo đánh giá", description = "Tạo một đánh giá sản phẩm mới (Yêu cầu xác thực)")
     public ResponseEntity<ApiResponse<ReviewResponse>> createReview(
             @Valid @RequestBody CreateReviewRequest request,
             @AuthenticationPrincipal Jwt jwt
@@ -48,22 +48,22 @@ public class ReviewController {
         String userId = jwt.getSubject();
         ReviewResponse response = reviewService.createReview(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(response, "Review submitted for moderation"));
+                .body(ApiResponse.success(response, "Đánh giá đã được gửi và đang chờ kiểm duyệt"));
     }
 
     @PutMapping("/admin/reviews/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Approve review", description = "Approve a pending review (Admin only)")
+    @Operation(summary = "Duyệt đánh giá", description = "Phê duyệt một đánh giá đang chờ (Chỉ dành cho Admin)")
     public ResponseEntity<ApiResponse<Void>> approveReview(@PathVariable UUID id) {
         reviewService.approveReview(id);
-        return ResponseEntity.ok(ApiResponse.success(null, "Review approved"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Đánh giá đã được duyệt"));
     }
 
     @PutMapping("/admin/reviews/{id}/reject")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Reject review", description = "Reject a pending review (Admin only)")
+    @Operation(summary = "Từ chối đánh giá", description = "Từ chối một đánh giá đang chờ (Chỉ dành cho Admin)")
     public ResponseEntity<ApiResponse<Void>> rejectReview(@PathVariable UUID id) {
         reviewService.rejectReview(id);
-        return ResponseEntity.ok(ApiResponse.success(null, "Review rejected"));
+        return ResponseEntity.ok(ApiResponse.success(null, "Đánh giá đã bị từ chối"));
     }
 }

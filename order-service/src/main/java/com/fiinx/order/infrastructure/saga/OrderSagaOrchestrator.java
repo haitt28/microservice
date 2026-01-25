@@ -240,7 +240,7 @@ public class OrderSagaOrchestrator {
     
     private void handleSagaFailure(Order order, String step, String error) {
         log.error("Saga step {} failed for order {}. Error: {}", step, order.getOrderNumber(), error);
-        order.markAsFailed("Saga failed at step " + step + ": " + error);
+        order.markAsFailed("Saga thất bại tại bước " + step + ": " + error);
         orderRepository.save(order);
     }
     

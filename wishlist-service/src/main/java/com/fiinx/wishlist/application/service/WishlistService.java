@@ -13,6 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Senior Note: Wishlist Service - Quản lý danh sách yêu thích.
+ * 
+ * - Cho phép người dùng lưu trữ sản phẩm quan tâm để mua sau.
+ * - Quản lý theo từng User ID.
+ * - Tự động khởi tạo Wishlist mới nếu người dùng chưa có.
+ */
 @Service
 public class WishlistService {
     

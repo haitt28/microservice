@@ -37,7 +37,7 @@ public class PaymentService {
     private static final Duration IDEMPOTENCY_TTL = Duration.ofHours(24);
 
     /**
-     * Initiate payment (Multi-gateway support)
+     * Khởi tạo giao dịch thanh toán (Hỗ trợ nhiều cổng thanh toán - Multi-gateway)
      */
     @Transactional
     public com.fiinx.payment.application.dto.PaymentResponse initiatePayment(com.fiinx.payment.application.dto.PaymentRequest request) {
@@ -71,13 +71,13 @@ public class PaymentService {
     }
 
     /**
-     * Process gateway webhook (IPN)
+     * Xử lý Webhook từ cổng thanh toán (IPN - Instant Payment Notification)
      */
     @Transactional
     public void processWebhook(UUID paymentId, boolean success, String transactionId) {
         log.info("Processing webhook for payment: {}, success: {}", paymentId, success);
         Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new RuntimeException("Payment not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch thanh toán"));
 
         if (payment.getStatus() != PaymentStatus.PENDING) {
             log.warn("Payment {} already processed with status {}", paymentId, payment.getStatus());
@@ -89,7 +89,7 @@ public class PaymentService {
         payment.setProcessedAt(Instant.now());
         
         if (!success) {
-            payment.setFailureReason("Gateway reported failure");
+            payment.setFailureReason("Cổng thanh toán báo lỗi");
         }
 
         paymentRepository.save(payment);
@@ -155,10 +155,10 @@ public class PaymentService {
     @Transactional
     public void processRefund(String paymentId, String reason) {
         Payment payment = paymentRepository.findById(UUID.fromString(paymentId))
-            .orElseThrow(() -> new IllegalArgumentException("Payment not found: " + paymentId));
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy giao dịch thanh toán: " + paymentId));
         
         if (payment.getStatus() != PaymentStatus.COMPLETED) {
-            log.warn("Cannot refund payment {} in status {}", paymentId, payment.getStatus());
+            log.warn("Không thể hoàn tiền cho giao dịch {} đang ở trạng thái {}", paymentId, payment.getStatus());
             return;
         }
         
@@ -172,7 +172,7 @@ public class PaymentService {
             paymentRepository.save(payment);
             log.info("Payment refunded: {}", paymentId);
         } else {
-            throw new RuntimeException("Refund failed for payment: " + paymentId);
+            throw new RuntimeException("Hoàn tiền thất bại cho giao dịch: " + paymentId);
         }
     }
     
@@ -193,7 +193,7 @@ public class PaymentService {
             return PaymentResult.builder()
                 .success(false)
                 .paymentId(payment.getId().toString())
-                .failureReason("Payment declined")
+                .failureReason("Thanh toán bị từ chối")
                 .failureCode("CARD_DECLINED")
                 .retryable(false)
                 .build();
@@ -205,7 +205,7 @@ public class PaymentService {
         return PaymentResult.builder()
             .success(false)
             .paymentId(payment.getId() != null ? payment.getId().toString() : null)
-            .failureReason("Payment gateway unavailable")
+            .failureReason("Cổng thanh toán không khả dụng")
             .failureCode("GATEWAY_ERROR")
             .retryable(true)
             .build();

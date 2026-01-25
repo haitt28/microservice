@@ -18,19 +18,19 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/payments")
 @RequiredArgsConstructor
-@Tag(name = "Payments", description = "Payment gateway integration API")
+@Tag(name = "Thanh toán", description = "API tích hợp cổng thanh toán")
 public class PaymentController {
 
     private final PaymentService paymentService;
 
     @PostMapping("/initiate")
-    @Operation(summary = "Initiate payment", description = "Get redirect URL for VNPay, MoMo, or ZaloPay")
+    @Operation(summary = "Khởi tạo thanh toán", description = "Lấy URL chuyển hướng cho VNPay, MoMo, hoặc ZaloPay")
     public ResponseEntity<ApiResponse<PaymentResponse>> initiatePayment(@RequestBody PaymentRequest request) {
         return ResponseEntity.ok(ApiResponse.success(paymentService.initiatePayment(request)));
     }
 
     @GetMapping("/callback/vnpay")
-    @Operation(summary = "VNPay Callback", description = "IPN URL for VNPay mock")
+    @Operation(summary = "Phản hồi từ VNPay", description = "URL IPN cho VNPay (giả lập)")
     public ResponseEntity<String> vnpayCallback(@RequestParam Map<String, String> params) {
         log.info("VNPay callback received: {}", params);
         UUID paymentId = UUID.fromString(params.get("vnp_TxnRef"));
@@ -40,7 +40,7 @@ public class PaymentController {
     }
 
     @PostMapping("/callback/momo")
-    @Operation(summary = "MoMo Callback", description = "IPN URL for MoMo mock")
+    @Operation(summary = "Phản hồi từ MoMo", description = "URL IPN cho MoMo (giả lập)")
     public ResponseEntity<Void> momoCallback(@RequestBody Map<String, Object> body) {
         log.info("MoMo callback received: {}", body);
         UUID paymentId = UUID.fromString(body.get("orderId").toString());

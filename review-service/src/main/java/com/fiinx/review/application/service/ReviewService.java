@@ -22,6 +22,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Senior Note: Review Service - Quản lý đánh giá sản phẩm.
+ * 
+ * - Xử lý logic tạo đánh giá mới (đảm bảo mỗi user chỉ đánh giá 1 lần/sản phẩm).
+ * - Cơ chế duyệt đánh giá (Moderation) trước khi hiển thị.
+ * - Tự động đồng bộ điểm đánh giá trung bình sang Product Service qua Event.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -36,7 +43,7 @@ public class ReviewService {
         log.info("Creating review for product: {} by user: {}", request.getProductId(), userId);
 
         if (reviewRepository.existsByProductIdAndUserId(request.getProductId(), userId)) {
-            throw new BusinessException("ALREADY_REVIEWED", "You have already reviewed this product", HttpStatus.BAD_REQUEST);
+            throw new BusinessException("ALREADY_REVIEWED", "Bạn đã đánh giá sản phẩm này rồi", HttpStatus.BAD_REQUEST);
         }
 
         Review review = reviewMapper.toEntity(request);
@@ -68,7 +75,7 @@ public class ReviewService {
         review.setStatus(ReviewStatus.APPROVED);
         reviewRepository.save(review);
 
-        // Notify Product Service to update rating
+        // Thông báo cho Product Service để cập nhật lại điểm đánh giá (Rating)
         updateProductRating(review.getProductId());
     }
 
@@ -86,9 +93,9 @@ public class ReviewService {
         Double avgRating = reviewRepository.getAverageRating(productId);
         Long count = reviewRepository.countApprovedReviews(productId);
         
-        // Publish event to Product Service
-        // This is a simplified version of event payload
-        log.info("Publishing rating update for product: {}, avg: {}, count: {}", productId, avgRating, count);
+        // Phát sự kiện (Event) sang Product Service
+        // Đây là phiên bản đơn giản hóa của payload sự kiện
+        log.info("Đang phát bản tin cập nhật rating cho sản phẩm: {}, avg: {}, count: {}", productId, avgRating, count);
         kafkaTemplate.send("product.rating.updated", productId.toString(), 
                 new java.util.HashMap<String, Object>() {{
                     put("productId", productId);

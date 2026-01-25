@@ -14,17 +14,17 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Senior Note: Cart Service với Redis storage
+ * Senior Note: Cart Service với cơ chế lưu trữ Redis.
  * 
- * - Session-based cart cho guest
- * - User-based cart cho authenticated users
- * - Auto-merge khi guest login
- * - TTL 24h cho inactive carts
+ * - Giỏ hàng dựa trên Session cho khách (Guest).
+ * - Giỏ hàng dựa trên User cho người dùng đã đăng nhập.
+ * - Tự động gộp (Merge) giỏ hàng khi khách đăng nhập.
+ * - Thời gian sống (TTL) 24h cho các giỏ hàng không hoạt động.
  * 
  * BEST PRACTICE:
- * - Redis cho fast read/write
- * - Denormalize product info để không phụ thuộc Product Service
- * - Validation trước khi add (stock check qua Product Service)
+ * - Sử dụng Redis để tối ưu tốc độ đọc/ghi (read/write).
+ * - Phi chuẩn hóa (Denormalize) thông tin sản phẩm để giảm phụ thuộc vào Product Service.
+ * - Kiểm tra tính hợp lệ trước khi thêm (Kiểm tra tồn kho qua Product Service).
  */
 @Slf4j
 @Service
@@ -39,7 +39,7 @@ public class CartService {
     private static final Duration CART_TTL = Duration.ofHours(24);
     
     /**
-     * Get cart by ID (create new if not exists)
+     * Lấy giỏ hàng theo ID (tạo mới nếu chưa tồn tại)
      */
     public Cart getCart(String cartId) {
         RBucket<Cart> bucket = redissonClient.getBucket(CART_PREFIX + cartId);
@@ -63,7 +63,7 @@ public class CartService {
     }
     
     /**
-     * Get cart by user ID
+     * Lấy giỏ hàng theo User ID
      */
     public Cart getCartByUserId(String userId) {
         String cartId = "user:" + userId;
@@ -71,7 +71,7 @@ public class CartService {
     }
     
     /**
-     * Get cart by session ID
+     * Lấy giỏ hàng theo Session ID
      */
     public Cart getCartBySessionId(String sessionId) {
         String cartId = "session:" + sessionId;
@@ -79,7 +79,7 @@ public class CartService {
     }
     
     /**
-     * Add item to cart
+     * Thêm sản phẩm vào giỏ hàng
      */
     public Cart addItem(String cartId, CartItem item) {
         log.info("Adding item to cart: cartId={}, productId={}", cartId, item.getProductId());
@@ -87,7 +87,7 @@ public class CartService {
         // TODO: Validate product exists and in stock (call Product Service)
         // ProductInfo product = productServiceClient.getProduct(item.getProductId());
         // if (!product.isInStock()) {
-        //     throw new BusinessException("Product out of stock");
+        //     throw new BusinessException("Sản phẩm đã hết hàng");
         // }
         
         Cart cart = getCart(cartId);
@@ -102,7 +102,7 @@ public class CartService {
     }
     
     /**
-     * Remove item from cart
+     * Xóa sản phẩm khỏi giỏ hàng
      */
     public Cart removeItem(String cartId, UUID productId) {
         log.info("Removing item from cart: cartId={}, productId={}", cartId, productId);
@@ -116,7 +116,7 @@ public class CartService {
     }
     
     /**
-     * Update item quantity
+     * Cập nhật số lượng sản phẩm
      */
     public Cart updateItemQuantity(String cartId, UUID productId, int quantity) {
         log.info("Updating item quantity: cartId={}, productId={}, quantity={}", 
@@ -135,7 +135,7 @@ public class CartService {
     }
     
     /**
-     * Clear cart
+     * Xóa sạch giỏ hàng (Clear)
      */
     public Cart clearCart(String cartId) {
         log.info("Clearing cart: cartId={}", cartId);
@@ -149,7 +149,7 @@ public class CartService {
     }
     
     /**
-     * Apply coupon code
+     * Áp dụng mã giảm giá (Coupon)
      */
     public Cart applyCoupon(String cartId, String couponCode) {
         log.info("Applying coupon: cartId={}, couponCode={}", cartId, couponCode);
@@ -172,7 +172,7 @@ public class CartService {
     }
     
     /**
-     * Remove coupon
+     * Gỡ bỏ mã giảm giá
      */
     public Cart removeCoupon(String cartId) {
         log.info("Removing coupon: cartId={}", cartId);
@@ -186,7 +186,7 @@ public class CartService {
     }
     
     /**
-     * Merge guest cart to user cart (khi login)
+     * Gộp giỏ hàng của khách vào giỏ hàng của User (khi login)
      */
     public Cart mergeGuestCart(String sessionId, String userId) {
         log.info("Merging guest cart to user cart: sessionId={}, userId={}", sessionId, userId);
@@ -214,7 +214,7 @@ public class CartService {
     }
     
     /**
-     * Save cart to Redis
+     * Lưu giỏ hàng vào Redis
      */
     private void saveCart(Cart cart) {
         RBucket<Cart> bucket = redissonClient.getBucket(CART_PREFIX + cart.getId());
@@ -222,7 +222,7 @@ public class CartService {
     }
     
     /**
-     * Delete cart
+     * Xóa giỏ hàng
      */
     private void deleteCart(String cartId) {
         RBucket<Cart> bucket = redissonClient.getBucket(CART_PREFIX + cartId);

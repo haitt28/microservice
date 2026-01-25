@@ -16,19 +16,19 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/identity/addresses")
 @RequiredArgsConstructor
-@Tag(name = "User Addresses", description = "Manage user shipping addresses")
+@Tag(name = "Địa chỉ người dùng", description = "Quản lý địa chỉ giao hàng của người dùng")
 public class AddressController {
 
     private final AddressService addressService;
 
     @GetMapping
-    @Operation(summary = "Get user addresses", description = "List all saved addresses for the current user")
+    @Operation(summary = "Lấy danh sách địa chỉ", description = "Liệt kê tất cả các địa chỉ đã lưu của người dùng hiện tại")
     public ResponseEntity<ApiResponse<List<AddressResponse>>> getMyAddresses(Principal principal) {
         return ResponseEntity.ok(ApiResponse.success(addressService.getUserAddresses(principal.getName())));
     }
 
     @PostMapping
-    @Operation(summary = "Add address", description = "Save a new shipping address")
+    @Operation(summary = "Thêm địa chỉ", description = "Lưu một địa chỉ giao hàng mới")
     public ResponseEntity<ApiResponse<AddressResponse>> addAddress(
             Principal principal,
             @RequestBody AddressRequest request

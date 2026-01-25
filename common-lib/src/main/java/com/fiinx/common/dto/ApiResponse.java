@@ -116,7 +116,7 @@ public class ApiResponse<T> {
         @Schema(description = "Tên trường gặp lỗi", example = "email")
         private String field;
         
-        @Schema(description = "Thông báo lỗi cho trường này", example = "must be a valid email")
+        @Schema(description = "Thông báo lỗi cho trường này", example = "phải là email hợp lệ")
         private String message;
         
         @Schema(description = "Giá trị bị từ chối", example = "invalid-email")

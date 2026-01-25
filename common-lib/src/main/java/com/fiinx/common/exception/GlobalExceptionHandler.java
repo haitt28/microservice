@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
     @org.springframework.beans.factory.annotation.Autowired(required = false)
     private Tracer tracer;
     
-    // ==================== Business Exceptions ====================
+    // ==================== Lỗi Nghiệp Vụ (Business Exceptions) ====================
     
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(
@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
                 .body(buildErrorResponse(ex.getErrorCode(), ex.getMessage()));
     }
     
-    // ==================== Validation Exceptions ====================
+    // ==================== Lỗi Validation (Validation Exceptions) ====================
     
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidationException(
@@ -71,11 +71,11 @@ public class GlobalExceptionHandler {
                         .build())
                 .toList();
         
-        log.warn("Validation failed: {} errors", fieldErrors.size());
+        log.warn("Validation thất bại: có {} lỗi", fieldErrors.size());
         
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("VALIDATION_FAILED", "Validation failed", fieldErrors));
+                .body(ApiResponse.error("VALIDATION_FAILED", "Dữ liệu không hợp lệ", fieldErrors));
     }
     
     @ExceptionHandler(BindException.class)
@@ -90,34 +90,34 @@ public class GlobalExceptionHandler {
         
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("BINDING_FAILED", "Request binding failed", fieldErrors));
+                .body(ApiResponse.error("BINDING_FAILED", "Lỗi liên kết dữ liệu yêu cầu", fieldErrors));
     }
     
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(
             MethodArgumentTypeMismatchException ex) {
         
-        String message = String.format("Parameter '%s' should be of type %s",
+        String message = String.format("Tham số '%s' phải có kiểu dữ liệu là %s",
                 ex.getName(),
                 Optional.ofNullable(ex.getRequiredType())
                         .map(Class::getSimpleName)
-                        .orElse("unknown"));
+                        .orElse("không xác định"));
         
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(buildErrorResponse("TYPE_MISMATCH", message));
     }
     
-    // ==================== Security Exceptions moved to SecurityExceptionHandler ====================
+    // ==================== Lỗi Bảo Mật (Security Exceptions) đã được chuyển sang SecurityExceptionHandler ====================
     
-    // ==================== Catch-all Handler ====================
+    // ==================== Xử lý các lỗi chung (Catch-all Handler) ====================
     
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGenericException(
             Exception ex, HttpServletRequest request) {
         
         // BEST PRACTICE: Log toàn bộ stack trace nhưng không bao giờ để lộ ra phía client.
-        log.error("Unexpected error for request {} {}: {}",
+        log.error("Lỗi không mong muốn cho yêu cầu {} {}: {}",
                 request.getMethod(),
                 request.getRequestURI(),
                 ex.getMessage(),
@@ -125,10 +125,10 @@ public class GlobalExceptionHandler {
         
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(buildErrorResponse("INTERNAL_ERROR", "An unexpected error occurred. Please try again later."));
+                .body(buildErrorResponse("INTERNAL_ERROR", "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau."));
     }
     
-    // ==================== Helper Methods ====================
+    // ==================== Các phương thức bổ trợ (Helper Methods) ====================
     
     private ApiResponse<Void> buildErrorResponse(String code, String message) {
         ApiResponse<Void> response = ApiResponse.error(code, message);

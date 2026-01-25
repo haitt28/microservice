@@ -16,6 +16,14 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Senior Note: Inventory Service - Quản lý kho hàng.
+ * 
+ * - Xử lý việc giữ hàng (Reservation) cho đơn hàng.
+ * - Kiểm tra tồn kho thời gian thực.
+ * - Nhập kho và điều chỉnh số lượng tồn kho.
+ * - Quản lý các mặt hàng sắp hết hàng (Low stock).
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -28,8 +36,8 @@ public class InventoryService {
         log.info("Attempting to reserve inventory for order: {}", command.getOrderId());
         List<InventoryReserveCommand.ReservationItem> reservedItems = new ArrayList<>();
         
-        // Senior Note: In a production system, we would store these in a 'Reservation' table.
-        // For now, we apply the reservation directly to the inventory entity.
+        // Senior Note: Trong một hệ thống thực tế (Production), chúng ta nên lưu các thông tin này vào bảng 'Reservation'.
+        // Hiện tại, chúng ta áp dụng việc giữ hàng trực tiếp vào thực thể Inventory.
         for (InventoryReserveCommand.ReservationItem item : command.getItems()) {
             UUID productId = UUID.fromString(item.getProductId());
             Inventory inventory = inventoryRepository.findByProductIdForUpdate(productId)
@@ -39,9 +47,9 @@ public class InventoryService {
                 inventoryRepository.save(inventory);
                 reservedItems.add(item);
             } else {
-                log.warn("Insufficient stock for product {}: requested {}, available {}", 
+                log.warn("Không đủ hàng trong kho cho sản phẩm {}: yêu cầu {}, hiện có {}", 
                         productId, item.getQuantity(), inventory.getAvailableQuantity());
-                return InventoryReservationResult.failure("Insufficient stock for product: " + item.getProductId(), 
+                return InventoryReservationResult.failure("Không đủ hàng trong kho cho sản phẩm: " + item.getProductId(), 
                         List.of(item));
             }
         }
@@ -55,10 +63,10 @@ public class InventoryService {
 
     @Transactional
     public void releaseReservation(String reservationId) {
-        // Senior Note: To properly release by ID, we need the Reservation record. 
-        // As a temporary fix for compile errors, we log this.
-        // TODO: Implement Reservation table to track items per reservationId.
-        log.info("Releasing reservation: {}. (Requires Reservation table for full implementation)", reservationId);
+        // Senior Note: Để giải phóng hàng theo ID một cách chính xác, chúng ta cần bản ghi Reservation.
+        // Đây là phương thức tạm thời để tránh lỗi biên dịch, xử lý thông qua ghi log.
+        // TODO: Triển khai bảng Reservation để theo dõi các mặt hàng cho mỗi reservationId.
+        log.info("Giải phóng hàng đã giữ: {}. (Yêu cầu bảng Reservation để triển khai đầy đủ)", reservationId);
     }
 
     @Transactional(readOnly = true)

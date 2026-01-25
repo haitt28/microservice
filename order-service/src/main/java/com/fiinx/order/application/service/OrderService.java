@@ -65,7 +65,7 @@ public class OrderService {
         orderTimelineRepository.save(com.fiinx.order.domain.entity.OrderTimeline.builder()
                 .orderId(order.getId())
                 .status(OrderStatus.CREATED.name())
-                .note("Order placed successfully")
+                .note("Đơn hàng đã được đặt thành công")
                 .build());
         
         // Start saga asynchronously
@@ -142,7 +142,7 @@ public class OrderService {
         orderTimelineRepository.save(com.fiinx.order.domain.entity.OrderTimeline.builder()
                 .orderId(order.getId())
                 .status(OrderStatus.CANCELLED.name())
-                .note("Order cancelled: " + reason)
+                .note("Đơn hàng đã bị hủy: " + reason)
                 .build());
         
         log.info("Order cancelled: {}", orderNumber);
