@@ -1,0 +1,28 @@
+# Nhiệm vụ: Dịch Chú thích Code sang Tiếng Việt
+
+- [x] Lập kế hoạch
+    - [x] Khám phá cấu trúc dự án
+    - [x] Xác định các tệp có chú thích tiếng Anh
+    - [x] Tạo kế hoạch triển khai
+- [x] Thực hiện
+    - [x] Dịch chú thích trong `common-lib` (Quét lần cuối)
+    - [x] Dịch chú thích trong `identity-service` (Kiểm tra và sửa lỗi còn lại)
+    - [x] Dịch chú thích trong `product-service`
+    - [x] Dịch chú thích trong `order-service`
+    - [x] Dịch chú thích trong `review-service`
+    - [x] Dịch chú thích trong `cart-service`
+    - [x] Dịch chú thích trong `promotion-service`
+    - [x] Dịch chú thích trong `inventory-service`
+    - [x] Dịch chú thích trong `notification-service`
+    - [x] Dịch chú thích trong `payment-service`
+    - [x] Dịch chú thích trong `shipping-service`
+    - [x] Dịch chú thích trong `media-service`
+    - [x] Dịch chú thích trong `search-service`
+    - [x] Dịch chú thích trong `chat-service`
+    - [x] Dịch chú thích trong `analytics-service`
+    - [x] Dịch chú thích trong `wishlist-service`
+    - [x] Dịch chú thích trong mã nguồn `frontend`
+- [x] Xác minh
+    - [x] Xem lại các chú thích đã dịch về độ chính xác và phong cách "senior"
+    - [x] Đảm bảo các thuật ngữ kỹ thuật được giữ nguyên
+    - [x] Tạo walkthrough (Bản hướng dẫn/Tổng kết)
