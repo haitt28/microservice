@@ -25,7 +25,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             transition={{ duration: 0.4 }}
             className="group bg-white border border-slate-100 rounded-3xl overflow-hidden hover:shadow-2xl hover:border-slate-200 transition-all duration-500"
         >
-            {/* Large Image Container */}
+            {/* Ảnh sản phẩm (Large Image Container) */}
             <Link href={`/products/${product.slug}`} className="relative block aspect-[4/3] bg-slate-50 overflow-hidden">
                 <Image
                     src={product.thumbnail || '/placeholder.png'}
@@ -35,14 +35,14 @@ export default function ProductCard({ product }: ProductCardProps) {
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
 
-                {/* Discount Badge */}
+                {/* Nhãn giảm giá (Discount Badge) */}
                 {discount > 0 && (
                     <div className="absolute top-4 left-4 bg-rose-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg">
                         -{discount}%
                     </div>
                 )}
 
-                {/* Hover Actions */}
+                {/* Các nút tương tác khi Hover */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                         <button className="p-3 bg-white rounded-full hover:bg-amber-400 hover:text-white transition-all shadow-lg">
@@ -55,14 +55,14 @@ export default function ProductCard({ product }: ProductCardProps) {
                 </div>
             </Link>
 
-            {/* Product Info */}
+            {/* Thông tin sản phẩm (Product Info) */}
             <div className="p-4 space-y-2 flex flex-col">
-                {/* Category - Softer styling */}
+                {/* Danh mục - Thiết kế tinh giản (Softer styling) */}
                 <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">
                     {product.category?.name || '\u00A0'}
                 </p>
 
-                {/* Product Name - Medium weight instead of bold */}
+                {/* Tên sản phẩm - Font weight trung bình để tạo sự thanh thoát */}
                 <Link href={`/products/${product.slug}`}>
                     <h3 className="text-base font-semibold text-slate-900 line-clamp-2 leading-tight hover:text-blue-600 transition-colors min-h-[2.5rem]">
                         {product.name}
@@ -70,7 +70,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 </Link>
 
 
-                {/* Rating - Show placeholder when no rating */}
+                {/* Đánh giá (Rating) - Hiển thị trạng thái mặc định nếu chưa có review */}
                 <div className="flex items-center gap-2 min-h-[20px]">
                     {product.rating && product.rating > 0 ? (
                         <>
@@ -94,7 +94,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                     )}
                 </div>
 
-                {/* Price - Reduced size and better alignment */}
+                {/* Giá bán - Căn chỉnh tối ưu và tỷ lệ chữ hài hòa */}
                 <div className="flex items-baseline gap-2 pt-1">
                     <span className="text-xl font-bold text-slate-900">
                         {(product.salePrice || product.price).toLocaleString('vi-VN')}đ
@@ -106,7 +106,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                     )}
                 </div>
 
-                {/* Add to Cart Button - Reduced padding */}
+                {/* Nút Thêm vào giỏ hàng - Tối ưu hóa không gian (Reduced padding) */}
                 <button
                     onClick={(e) => {
                         e.preventDefault();

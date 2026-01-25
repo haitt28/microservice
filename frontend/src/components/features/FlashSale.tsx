@@ -5,6 +5,14 @@ import { Timer, Zap, ArrowRight, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from '@/components/features/ProductCard';
 
+/**
+ * Senior Note: Flash Sale Component - Hiển thị các sản phẩm giảm giá chớp nhoáng.
+ * 
+ * - Sử dụng useEffect và setInterval để xử lý logic Countdown (đếm ngược thời gian).
+ * - Dữ liệu được mock trực tiếp (FLASH_PRODUCTS) cho mục đích minh họa UI.
+ * - Animation được xử lý bởi Framer Motion để tạo hiệu ứng mượt mà.
+ */
+
 const FLASH_PRODUCTS = [
     { id: 'f1', name: 'Premium Audio Set', price: 12000000, salePrice: 7990000, thumbnail: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=1000&auto=format&fit=crop', category: { name: 'Âm thanh' } },
     { id: 'f2', name: 'Smart Home Hub v3', price: 4500000, salePrice: 2890000, thumbnail: 'https://images.unsplash.com/photo-1589003077984-894e133dabab?q=80&w=1000&auto=format&fit=crop', category: { name: 'Gia dụng' } },
@@ -15,6 +23,7 @@ const FLASH_PRODUCTS = [
 export default function FlashSale() {
     const [timeLeft, setTimeLeft] = useState({ hours: 12, minutes: 59, seconds: 59 });
 
+    // Logic đếm ngược thời gian (Countdown timer)
     useEffect(() => {
         const timer = setInterval(() => {
             setTimeLeft(prev => {

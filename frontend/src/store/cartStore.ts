@@ -2,6 +2,14 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Product } from '@/types';
 
+/**
+ * Senior Note: Cart Store - Quản lý giỏ hàng sử dụng Zustand.
+ * 
+ * - Cart được lưu trữ (persist) vào LocalStorage để duy trì dữ liệu qua các phiên làm việc.
+ * - Các action addItem, removeItem, updateQuantity được thiết kế để xử lý Logic đồng bộ.
+ * - Tự động tính toán tổng số lượng và tổng giá trị giỏ hàng thông qua get().
+ */
+
 interface CartItem extends Product {
     quantity: number;
 }

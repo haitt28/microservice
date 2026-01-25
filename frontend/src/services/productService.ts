@@ -1,9 +1,9 @@
 import api from '../lib/api';
 import { Product, Category } from '../types';
 
-// Utility to handle API failures gracefully in development
+// Tiện ích xử lý lỗi API mềm dẻo (gracefully) trong môi trường phát triển
 const handleApiError = (error: any, fallback: any) => {
-    console.warn('[API Warning] Using fallback data because backend is unreachable:', error.message);
+    console.warn('[API Warning] Sử dụng dữ liệu mẫu (fallback) vì không thể kết nối tới Backend:', error.message);
     return fallback;
 };
 
@@ -22,7 +22,7 @@ export const ProductService = {
             const response = await api.get<Product>(`/products/${slug}`);
             return response.data;
         } catch (e) {
-            // Mock one product for demo purposes if API fails
+            // Trả về một sản phẩm mẫu cho mục đích demo nếu API thất bại
             return handleApiError(e, {
                 id: 'mock-1',
                 slug: 'minimalist-smart-watch-v2',

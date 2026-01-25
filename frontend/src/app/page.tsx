@@ -18,10 +18,10 @@ export default function Home() {
 
   return (
     <div className="bg-white">
-      {/* Modern Hero Section - Clean Typography */}
+      {/* Hero Section hiện đại - Tập trung vào Typography tinh gọn */}
       <section className="relative min-h-[90vh] flex items-center pt-20 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
         <div className="section-container grid grid-cols-1 lg:grid-cols-2 gap-16 items-center py-20">
-          {/* Left: Content */}
+          {/* Cột trái: Nội dung chính */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -60,7 +60,7 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Stats */}
+            {/* Chỉ số thống kê (Stats) */}
             <div className="grid grid-cols-3 gap-8 pt-8 border-t border-slate-200">
               <div>
                 <p className="text-3xl font-bold text-slate-900">50K+</p>
@@ -77,7 +77,7 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* Right: Large Hero Image */}
+          {/* Cột phải: Hình ảnh Hero Banner */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -96,7 +96,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Value Propositions */}
+      {/* Phần giới thiệu giá trị cốt lõi (Value Propositions) */}
       <section className="section-container py-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
@@ -122,10 +122,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Flash Sale */}
+      {/* Phần Flash Sale */}
       <FlashSale />
 
-      {/* Featured Products */}
+      {/* Phần Sản phẩm nổi bật (Featured Products) */}
       <section className="section-container py-20 space-y-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-3">
@@ -161,7 +161,7 @@ export default function Home() {
         )}
       </section>
 
-      {/* CTA Section */}
+      {/* Phần kêu gọi hành động (CTA Section) */}
       <section className="section-container py-20">
         <div className="relative rounded-[48px] overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-16 md:p-24 text-center">
           <div className="absolute inset-0 opacity-10">

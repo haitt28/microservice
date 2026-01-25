@@ -19,19 +19,19 @@ export default function Navbar() {
     const [mounted, setMounted] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-    // Prevent hydration mismatch
+    // Ngăn chặn lỗi Hydration mismatch giữa Server và Client
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    // Close menus on path change
+    // Đóng các menu khi chuyển hướng (Path change)
     useEffect(() => {
         setIsAccountOpen(false);
         setIsMobileMenuOpen(false);
         setIsSearchOpen(false);
     }, [pathname]);
 
-    // Handle scroll effect
+    // Xử lý hiệu ứng khi Scroll (Thay đổi style header)
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 20);
         window.addEventListener('scroll', handleScroll);
@@ -73,7 +73,7 @@ export default function Navbar() {
                     </div>
 
                     <div className="flex items-center gap-2 sm:gap-4">
-                        {/* Search Toggle */}
+                        {/* Nút bật/tắt ô tìm kiếm (Search Toggle) */}
                         <div className="relative flex items-center">
                             <AnimatePresence>
                                 {isSearchOpen && (
@@ -171,7 +171,7 @@ export default function Navbar() {
                 </div>
             </nav>
 
-            {/* SPACER: Optimized to ensure no content is hidden by fixed header */}
+            {/* SPACER: Được tối ưu hóa để đảm bảo nội dung không bị che khuất bởi Fixed Header */}
             <div className="h-28 md:h-32 pointer-events-none" />
 
             {/* Mobile Menu Overlay */}

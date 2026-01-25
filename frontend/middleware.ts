@@ -1,17 +1,25 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
+/**
+ * Senior Note: Next.js Middleware - Xử lý Authorization tập trung.
+ * 
+ * - Kiểm tra quyền truy cập cho các route bảo mật (e.g. /admin).
+ * - Redirect người dùng không có quyền (RBAC) về trang unauthorized.
+ * - Tận dụng NextAuth để trích xuất JWT/Token từ request.
+ */
+
 export default withAuth(
     function middleware(req) {
         const token = req.nextauth.token;
         const isAdminRoute = req.nextUrl.pathname.startsWith('/admin');
 
-        // Check if user is trying to access admin routes
+        // Kiểm tra nếu người dùng đang cố gắng truy cập các route quản trị
         if (isAdminRoute) {
             const roles = token?.roles as string[] || [];
             const isAdmin = roles.includes('admin');
 
-            // Redirect to unauthorized page if user doesn't have admin role
+            // Điều hướng đến trang không có quyền nếu người dùng không có role admin
             if (!isAdmin) {
                 return NextResponse.redirect(new URL('/unauthorized', req.url));
             }
@@ -24,12 +32,12 @@ export default withAuth(
             authorized: ({ token, req }) => {
                 const isAdminRoute = req.nextUrl.pathname.startsWith('/admin');
 
-                // Admin routes require authentication
+                // Các route quản trị yêu cầu phải được xác thực (Authenticated)
                 if (isAdminRoute) {
                     return !!token;
                 }
 
-                // All other routes are accessible
+                // Tất cả các route khác đều có thể truy cập tự do
                 return true;
             },
         },
@@ -39,7 +47,7 @@ export default withAuth(
     }
 );
 
-// Protect admin routes
+// Bảo vệ các admin routes (Matcher pattern)
 export const config = {
     matcher: ['/admin/:path*'],
 };

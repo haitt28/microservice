@@ -8,7 +8,7 @@ const api = axios.create({
     },
 });
 
-// Interceptor for Auth
+// Interceptor cho Authentication - Đính kèm Access Token vào Header
 api.interceptors.request.use(async (config) => {
     const session: any = await getSession();
     if (session?.accessToken) {
@@ -17,7 +17,7 @@ api.interceptors.request.use(async (config) => {
     return config;
 });
 
-// Interceptor for Error Handling
+// Interceptor xử lý lỗi API tập trung
 api.interceptors.response.use(
     (response) => response,
     (error) => {

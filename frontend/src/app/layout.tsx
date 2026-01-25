@@ -12,8 +12,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'LUXORA | Luxury E-commerce Experience',
-  description: 'Elevate your lifestyle with curated high-end technology and essentials.',
+  title: 'LUXORA | Trải nghiệm mua sắm xa xỉ',
+  description: 'Nâng tầm phong cách sống với các thiết bị công nghệ và đồ dùng cao cấp hàng đầu.',
 }
 
 export default function RootLayout({
