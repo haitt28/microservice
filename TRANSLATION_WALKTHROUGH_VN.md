@@ -27,6 +27,14 @@ Tôi đã hoàn thành việc dịch tất cả các chú thích code tiếng An
 | **frontend** | Middleware, API services, Quản lý state (Zustand), UI Components |
 | **Các Dịch vụ khác** | Logic và API của `media`, `search`, `chat`, `analytics`, `wishlist` |
 
+## Sửa lỗi Infrastructure & Docker Build
+
+Tôi đã thực hiện các cải tiến quan trọng để hệ thống có thể chạy hoàn chỉnh trên Docker:
+
+- **Chuẩn hóa Dockerfile**: Tạo mới và nâng cấp Dockerfile cho tất cả 15 microservices sử dụng mô hình **Multi-stage build**. Điều này giúp giảm kích thước image và tăng tốc độ build bằng cách cache các layer Maven dependencies.
+- **Cấu hình Docker Compose**: Kích hoạt lại toàn bộ các business services trong `docker-compose.yml`. Thiết lập cơ chế `depends_on` kèm theo `healthcheck` để đảm bảo các service chỉ khởi chạy khi Database và Kafka đã sẵn sàng.
+- **Biến môi trường tối ưu**: Tự động cấu hình các tham số kết nối (Postgres URL, Kafka Bootstrap, Redis Host) thông qua environment variables trong Docker Compose, giúp hệ thống chạy ngay mà không cần sửa code.
+
 ## Ví dụ về Mã nguồn Đã dịch
 
 ### Thư viện Chung - Distributed Lock

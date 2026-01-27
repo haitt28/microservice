@@ -12,7 +12,7 @@ COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
 COPY common-lib/pom.xml common-lib/
-COPY identity-service/pom.xml identity-service/
+COPY promotion-service/pom.xml promotion-service/
 
 # Download dependencies
 RUN chmod +x mvnw && \
@@ -20,13 +20,13 @@ RUN chmod +x mvnw && \
 
 # Copy source code
 COPY common-lib/src common-lib/src
-COPY identity-service/src identity-service/src
+COPY promotion-service/src promotion-service/src
 
 # Build the application
-RUN ./mvnw clean package -pl identity-service -am -DskipTests -B
+RUN ./mvnw clean package -pl promotion-service -am -DskipTests -B
 
 # Extract layers
-WORKDIR /app/identity-service/target
+WORKDIR /app/promotion-service/target
 RUN java -Djarmode=layertools -jar *.jar extract
 
 # ==================== Runtime Stage ====================
@@ -38,10 +38,10 @@ USER appuser
 WORKDIR /app
 
 # Copy extracted layers
-COPY --from=builder /app/identity-service/target/dependencies/ ./
-COPY --from=builder /app/identity-service/target/spring-boot-loader/ ./
-COPY --from=builder /app/identity-service/target/snapshot-dependencies/ ./
-COPY --from=builder /app/identity-service/target/application/ ./
+COPY --from=builder /app/promotion-service/target/dependencies/ ./
+COPY --from=builder /app/promotion-service/target/spring-boot-loader/ ./
+COPY --from=builder /app/promotion-service/target/snapshot-dependencies/ ./
+COPY --from=builder /app/promotion-service/target/application/ ./
 
 ENV JAVA_OPTS="-XX:+UseZGC \
     -XX:+ZGenerational \
@@ -50,6 +50,6 @@ ENV JAVA_OPTS="-XX:+UseZGC \
     -Djava.security.egd=file:/dev/./urandom \
     -Dspring.backgroundpreinitializer.ignore=true"
 
-EXPOSE 8085
+EXPOSE 8089
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher"]

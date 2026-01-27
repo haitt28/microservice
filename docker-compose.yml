@@ -172,17 +172,300 @@ services:
 
   # ==================== Business Services ====================
 
-  # ==================== Business Services (Run via IDE for local development) ====================
+  identity-service:
+    image: fiinx/identity-service:1.0.0-SNAPSHOT
+    container_name: microservice-identity
+    build:
+      context: .
+      dockerfile: identity-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/identitydb
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8085:8085"
+    networks:
+      - microservice-net
 
-  # order-service:
-  #   ...
-  # inventory-service:
-  #   ...
-  # payment-service:
-  #   ...
-  # identity-service:
-  #   ...
+  product-service:
+    image: fiinx/product-service:1.0.0-SNAPSHOT
+    container_name: microservice-product
+    build:
+      context: .
+      dockerfile: product-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/productdb
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8086:8086"
+    networks:
+      - microservice-net
 
+  inventory-service:
+    image: fiinx/inventory-service:1.0.0-SNAPSHOT
+    container_name: microservice-inventory
+    build:
+      context: .
+      dockerfile: inventory-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/inventorydb
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8082:8082"
+    networks:
+      - microservice-net
+
+  order-service:
+    image: fiinx/order-service:1.0.0-SNAPSHOT
+    container_name: microservice-order
+    build:
+      context: .
+      dockerfile: order-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/orderdb
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    networks:
+      - microservice-net
+
+  payment-service:
+    image: fiinx/payment-service:1.0.0-SNAPSHOT
+    container_name: microservice-payment
+    build:
+      context: .
+      dockerfile: payment-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/paymentdb
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+    networks:
+      - microservice-net
+
+  notification-service:
+    image: fiinx/notification-service:1.0.0-SNAPSHOT
+    container_name: microservice-notification
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8084:8084"
+    networks:
+      - microservice-net
+
+  cart-service:
+    image: fiinx/cart-service:1.0.0-SNAPSHOT
+    container_name: microservice-cart
+    build:
+      context: .
+      dockerfile: cart-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cartdb
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8088:8088"
+    networks:
+      - microservice-net
+
+  promotion-service:
+    image: fiinx/promotion-service:1.0.0-SNAPSHOT
+    container_name: microservice-promotion
+    build:
+      context: .
+      dockerfile: promotion-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/promotiondb
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8089:8089"
+    networks:
+      - microservice-net
+
+  review-service:
+    image: fiinx/review-service:1.0.0-SNAPSHOT
+    container_name: microservice-review
+    build:
+      context: .
+      dockerfile: review-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/reviewdb
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8087:8087"
+    networks:
+      - microservice-net
+
+  shipping-service:
+    image: fiinx/shipping-service:1.0.0-SNAPSHOT
+    container_name: microservice-shipping
+    build:
+      context: .
+      dockerfile: shipping-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/shippingdb
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8091:8091"
+    networks:
+      - microservice-net
+
+  media-service:
+    image: fiinx/media-service:1.0.0-SNAPSHOT
+    container_name: microservice-media
+    build:
+      context: .
+      dockerfile: media-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mediadb
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8092:8092"
+    networks:
+      - microservice-net
+
+  search-service:
+    image: fiinx/search-service:1.0.0-SNAPSHOT
+    container_name: microservice-search
+    build:
+      context: .
+      dockerfile: search-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/searchdb
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8093:8093"
+    networks:
+      - microservice-net
+
+  analytics-service:
+    image: fiinx/analytics-service:1.0.0-SNAPSHOT
+    container_name: microservice-analytics
+    build:
+      context: .
+      dockerfile: analytics-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/analyticsdb
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8094:8094"
+    networks:
+      - microservice-net
+
+  wishlist-service:
+    image: fiinx/wishlist-service:1.0.0-SNAPSHOT
+    container_name: microservice-wishlist
+    build:
+      context: .
+      dockerfile: wishlist-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/wishlistdb
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8095:8095"
+    networks:
+      - microservice-net
+
+  chat-service:
+    image: fiinx/chat-service:1.0.0-SNAPSHOT
+    container_name: microservice-chat
+    build:
+      context: .
+      dockerfile: chat-service/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/chatdb
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8096:8096"
+    networks:
+      - microservice-net
   # ==================== API Gateway ====================
 
 

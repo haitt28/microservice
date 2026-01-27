@@ -22,6 +22,11 @@
     - [x] Dịch chú thích trong `analytics-service`
     - [x] Dịch chú thích trong `wishlist-service`
     - [x] Dịch chú thích trong mã nguồn `frontend`
+- [x] Sửa lỗi Docker Build cho Microservices
+    - [x] Tạo chuẩn `Dockerfile` cho các dịch vụ (Template)
+    - [x] Cập nhật `docker-compose.yml` (Uncomment & Configure)
+    - [x] Kiểm tra kết nối Network & biến môi trường
+    - [x] Build và chạy thử hệ thống
 - [x] Xác minh
     - [x] Xem lại các chú thích đã dịch về độ chính xác và phong cách "senior"
     - [x] Đảm bảo các thuật ngữ kỹ thuật được giữ nguyên

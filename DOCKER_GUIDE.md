@@ -178,7 +178,78 @@ docker-compose up -d
 
 ---
 
-## Services Ports Summary
+## Bước 7: Các lệnh Docker & Docker Compose thường dùng (Senior Cheat Sheet)
+
+Dưới đây là các lệnh bạn sẽ thường xuyên sử dụng trong quá trình phát triển và vận hành hệ thống microservices này:
+
+### 7.1 Quản lý Docker Compose
+| Lệnh | Giải thích (Senior View) |
+| :--- | :--- |
+| `docker-compose up -d` | Khởi chạy tất cả services ở chế độ nền. Docker sẽ tự quản lý thứ tự chạy dựa trên `depends_on`. |
+| `docker-compose up -d --build` | Ép Docker phải build lại image từ source code (Dockerfile) rồi mới khởi chạy. Dùng khi bạn vừa sửa code/cấu hình. |
+| `docker-compose stop` | Dừng các services nhưng KHÔNG xóa container. Trạng thái database và dữ liệu tạm vẫn được giữ nguyên. |
+| `docker-compose down` | Dừng và **XÓA** sạch containers cùng với virtual network. Đây là cách "mạnh tay" để reset môi trường. |
+| `docker-compose down -v` | Xóa cả **Volumes** (dữ liệu database). Cực kỳ hữu ích khi bạn muốn reset DB về trạng thái trống hoàn toàn. |
+
+### 7.2 Theo dõi Logs (Giám sát hệ thống)
+| Lệnh | Giải thích |
+| :--- | :--- |
+| `docker-compose logs -f` | Theo dõi log của tất cả các services cùng lúc theo thời gian thực. |
+| `docker-compose logs -f <service-name>` | Chỉ theo dõi log của 1 service cụ thể (ví dụ: `order-service` hoặc `kafka`). |
+| `docker-compose logs --tail=100 <name>` | Xem 100 dòng log cuối cùng của một service. |
+
+### 7.3 Quản lý Containers & Images
+| Lệnh | Giải thích |
+| :--- | :--- |
+| `docker ps` | Liệt kê các containers đang chạy. Giúp bạn check xem có service nào bị crash (Exited) không. |
+| `docker stats` | Xem mức độ tiêu thụ RAM/CPU của từng microservice (rất quan trọng để tối ưu resource). |
+| `docker exec -it <name> sh` | Truy cập trực tiếp vào bên trong container (Terminal). Dùng để kiểm tra file hệ thống hoặc ping nội bộ. |
+| `docker system prune -a` | Dọn dẹp sạch sẽ các images/containers/networks dư thừa không dùng tới để giải phóng bộ nhớ ổ cứng. |
+
+> [!TIP]
+> **Senior Tip**: Khi bạn thấy hệ thống chạy không đúng ý, hãy thử `docker-compose logs -f <service-name>` đầu tiên. log của Spring Boot sẽ nói cho bạn biết chính xác tại sao nó không kết nối được tới Database hoặc Kafka.
+
+---
+
+## Bước 8: Giải thích cấu trúc Dockerfile (Senior Design Patterns)
+
+Tất cả các Microservices trong dự án này đều sử dụng một mẫu Dockerfile chuẩn hóa, được tối ưu cho môi trường Production. Dưới đây là giải thích chi tiết các "mẫu thiết kế" (patterns) đã sử dụng:
+
+### 8.1 Multi-stage Build (Xây dựng đa giai đoạn)
+Chúng ta chia quá trình build làm 2 giai đoạn (`builder` và `runtime`):
+- **Stage 1 (builder)**: Sử dụng JDK full để compile code.
+- **Stage 2 (runtime)**: Chỉ sử dụng JRE (nhẹ hơn nhiều) để chạy app.
+- **Lợi ích**: Giảm kích thước image cuối cùng, tăng tính bảo mật (không chứa source code hoặc công cụ build trong container vận hành).
+
+### 8.2 Tối ưu Cache Layer (Dependency Caching)
+Bằng cách `COPY mvnw`, `pom.xml` và chạy `go-offline` TRƯỚC khi copy source code:
+- Docker sẽ cache lại toàn bộ thư viện Maven.
+- Khi bạn sửa code Java, Docker sẽ KHÔNG tải lại thư viện, giúp tốc độ build tăng gấp 5-10 lần.
+
+### 8.3 Layered JAR (Trích xuất lớp Spring Boot)
+Lệnh `java -Djarmode=layertools -jar *.jar extract` chia file JAR thành 4 lớp:
+1. `dependencies`: Các thư viện bên thứ 3 (ít thay đổi).
+2. `spring-boot-loader`: Trình tải của Spring.
+3. `snapshot-dependencies`: Các bản build tạm.
+4. `application`: Code của bạn (thay đổi thường xuyên nhất).
+- **Tại sao?**: Khi deploy, Docker chỉ cần đẩy lớp `application` siêu nhẹ qua mạng thay vì đẩy cả file JAR 100MB.
+
+### 8.4 Bảo mật: Non-root User
+Lệnh `USER appuser` cực kỳ quan trọng:
+- Theo mặc định, Docker chạy quyền `root`. Nếu hacker chiếm được container, chúng sẽ có quyền root máy chủ.
+- Chạy bằng `appuser` giúp giới hạn quyền hạn, bảo vệ máy chủ vật lý.
+
+### 8.5 JVM Optimization (Tối ưu hiệu năng)
+Các tham số trong `JAVA_OPTS`:
+- `-XX:+UseZGC`: Sử dụng Garbage Collector thế hệ mới, giúp giảm độ trễ (latency) xuống mức cực thấp.
+- `-XX:MaxRAMPercentage=75.0`: Tự động điều chỉnh RAM theo giới hạn của Docker (thay vì dùng `-Xmx` cứng nhắc).
+
+### 8.6 Healthcheck (Xác thực trạng thái)
+Docker sẽ định kỳ gọi vào `/actuator/health` của Spring Boot:
+- Dự án sẽ biết chính xác khi nào một service bị "treo" để có biện pháp khởi động lại tự động (Self-healing).
+
+> [!IMPORTANT]
+> **Senior Note**: Đừng bao giờ tạo Dockerfile kiểu `COPY . .` rồi `RUN mvn package`. Đó là cách làm của Junior, khiến image nặng và build cực chậm!
 
 | Service | Port | URL |
 |---------|------|-----|
