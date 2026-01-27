@@ -182,32 +182,58 @@ docker-compose up -d
 
 Dưới đây là các lệnh bạn sẽ thường xuyên sử dụng trong quá trình phát triển và vận hành hệ thống microservices này:
 
-### 7.1 Quản lý Docker Compose
+### 7.1 Quản lý Docker Compose (Lifecycle)
 | Lệnh | Giải thích (Senior View) |
 | :--- | :--- |
 | `docker-compose up -d` | Khởi chạy tất cả services ở chế độ nền. Docker sẽ tự quản lý thứ tự chạy dựa trên `depends_on`. |
-| `docker-compose up -d --build` | Ép Docker phải build lại image từ source code (Dockerfile) rồi mới khởi chạy. Dùng khi bạn vừa sửa code/cấu hình. |
+| `docker-compose up -d --build` | Ép Docker phải build lại image từ source code rồi mới khởi chạy. Dùng khi bạn vừa sửa code/cấu hình. |
+| `docker-compose restart <name>` | Khởi động lại nhanh 1 service mà không phá hủy container. Dùng khi app bị treo. |
 | `docker-compose stop` | Dừng các services nhưng KHÔNG xóa container. Trạng thái database và dữ liệu tạm vẫn được giữ nguyên. |
-| `docker-compose down` | Dừng và **XÓA** sạch containers cùng với virtual network. Đây là cách "mạnh tay" để reset môi trường. |
-| `docker-compose down -v` | Xóa cả **Volumes** (dữ liệu database). Cực kỳ hữu ích khi bạn muốn reset DB về trạng thái trống hoàn toàn. |
+| `docker-compose down` | Dừng và **XÓA** sạch containers cùng với virtual network. |
+| `docker-compose down -v` | Xóa cả **Volumes** (Dữ liệu database). Cực kỳ hữu ích khi bạn muốn reset DB về trạng thái trống hoàn toàn. |
 
-### 7.2 Theo dõi Logs (Giám sát hệ thống)
+### 7.2 Quản lý Volume (Dữ liệu bền vững)
+Volume giúp dữ liệu (như Database) không bị mất khi container bị xóa.
 | Lệnh | Giải thích |
 | :--- | :--- |
-| `docker-compose logs -f` | Theo dõi log của tất cả các services cùng lúc theo thời gian thực. |
-| `docker-compose logs -f <service-name>` | Chỉ theo dõi log của 1 service cụ thể (ví dụ: `order-service` hoặc `kafka`). |
-| `docker-compose logs --tail=100 <name>` | Xem 100 dòng log cuối cùng của một service. |
+| `docker volume ls` | Liệt kê tất cả các volumes đang có trên máy. |
+| `docker volume inspect <name>` | Xem chi tiết Volume này đang nằm ở đâu trên ổ cứng máy thật của bạn. |
+| `docker volume rm <name>` | Xóa thủ công một Volume không dùng tới. |
+| `docker volume prune` | Dọn dẹp tất cả các Volumes "mồ côi" (không gắn với container nào). |
 
-### 7.3 Quản lý Containers & Images
+### 7.3 Quản lý Network (Kết nối nội bộ)
+Dùng để debug khi các microservices không "nhìn thấy" nhau.
 | Lệnh | Giải thích |
 | :--- | :--- |
-| `docker ps` | Liệt kê các containers đang chạy. Giúp bạn check xem có service nào bị crash (Exited) không. |
-| `docker stats` | Xem mức độ tiêu thụ RAM/CPU của từng microservice (rất quan trọng để tối ưu resource). |
-| `docker exec -it <name> sh` | Truy cập trực tiếp vào bên trong container (Terminal). Dùng để kiểm tra file hệ thống hoặc ping nội bộ. |
-| `docker system prune -a` | Dọn dẹp sạch sẽ các images/containers/networks dư thừa không dùng tới để giải phóng bộ nhớ ổ cứng. |
+| `docker network ls` | Xem danh sách các mạng ảo (thường là `microservice-net`). |
+| `docker network inspect <net>` | Xem danh sách IP của tất cả container đang tham gia vào mạng này. |
+| `docker network connect <net> <c>`| Ép một container tham gia vào mạng mới mà không cần restart. |
+
+### 7.4 Theo dõi Logs (Giám sát hệ thống)
+| Lệnh | Giải thích |
+| :--- | :--- |
+| `docker-compose logs -f` | Theo dõi log của toàn bộ hệ thống theo thời gian thực. |
+| `docker-compose logs -f <name>` | Chỉ theo dõi log của 1 service cụ thể (ví dụ: `order-service`). |
+| `docker-compose logs --tail=100 <name>` | Xem 100 dòng log cuối cùng. |
+
+### 7.5 Tương tác & Troubleshooting (Câu lệnh "Cứu hộ")
+| Lệnh | Giải thích |
+| :--- | :--- |
+| `docker exec -it <name> sh` | Truy cập trực tiếp vào Terminal bên trong container để debug file hoặc môi trường. |
+| `docker cp <host_path> <c_path>` | Copy file từ máy thật vào trong container (hoặc ngược lại). |
+| `docker inspect <name>` | Xem toàn bộ cấu hình "ruột gan" của container (IP, Biến môi trường, Mount point). |
+| `docker stats` | Xem mức độ "ngốn" RAM/CPU của từng microservice theo thời gian thực. |
+
+### 7.6 Dọn dẹp hệ thống (System Maintenance)
+Dùng khi máy bạn bị báo đầy ổ cứng do Docker chiếm dụng.
+| Lệnh | Giải thích |
+| :--- | :--- |
+| `docker image prune` | Xóa các image "dangling" (image cũ bị đè sau khi build mới). |
+| `docker container prune` | Xóa toàn bộ các container đã dừng (status: Exited). |
+| `docker auto-clean (Senior)` | `docker system prune -a --volumes`: Lệnh "hủy diệt", xóa sạch SẠCH mọi thứ không dùng tới (Image, Volume, Network). |
 
 > [!TIP]
-> **Senior Tip**: Khi bạn thấy hệ thống chạy không đúng ý, hãy thử `docker-compose logs -f <service-name>` đầu tiên. log của Spring Boot sẽ nói cho bạn biết chính xác tại sao nó không kết nối được tới Database hoặc Kafka.
+> **Senior Tip**: Khi microservice báo lỗi `UnknownHostException` hoặc không nối được DB, hãy dùng `docker network inspect microservice-net`. Bạn sẽ thấy IP và Alias của từng service. Đôi khi restart Docker Desktop là cách giải quyết nhanh nhất cho các vấn đề network kỳ quái trên Windows.
 
 ---
 
