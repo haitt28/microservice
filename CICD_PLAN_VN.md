@@ -166,7 +166,39 @@ Dùng cho các thông tin thay đổi theo môi trường (Staging/Prod). File n
 
 ---
 
-## 5. Tại sao đây là mẫu thiết kế "Senior"?
+## 5. Tại sao phải viết cấu hình vào file .yml? (Tư duy Pipeline as Code)
+
+Đây là một câu hỏi rất hay. Trong giới DevOps chuyên nghiệp, chúng ta gọi đây là mô hình **Pipeline as Code**. Dưới đây là 5 lý do cốt lõi tại sao một Senior sẽ không bao giờ cấu hình CI/CD bằng giao diện kéo thả (UI) mà luôn dùng YAML:
+
+### 5.1 Quy định bắt buộc của GitHub
+GitHub Actions được thiết kế để tự động hóa dựa trên sự kiện (Event-driven). Nó chỉ quét duy nhất thư mục `.github/workflows/` để tìm các file `.yml`. Nếu bạn không có file này, GitHub sẽ không biết phải build code của bạn ở đâu và như thế nào.
+
+### 5.2 Quản trị bằng Version Control (Git)
+Khi cấu hình nằm trong file `.yml`, nó trở thành một phần của mã nguồn:
+- **Lịch sử thay đổi**: Bạn biết chính xác ai đã sửa lệnh build, sửa cái gì và tại sao.
+- **Khả năng Rollback**: Nếu bản deploy hôm nay bị lỗi do cấu hình sai, bạn chỉ cần `git revert` lại file `.yml` của ngày hôm qua. Hệ thống sẽ ngay lập tức quay về trạng thái ổn định.
+
+### 5.3 YAML: Ngôn ngữ trung gian hoàn hảo
+YAML (Yet Another Markup Language) không phải là mã thực thi mà là **mã cấu hình**.
+- **Với con người**: Nó cực kỳ dễ đọc (Human-readable) nhờ cấu trúc phân cấp bằng khoảng trắng.
+- **Với máy móc**: Các con Bot build (Runners) có thể đọc và xẻ nhỏ dữ liệu này cực nhanh để thực thi đúng thứ tự.
+
+### 5.4 Tính Nhất quán và Di động (Portability)
+Hãy tưởng tượng bạn có 15 microservices. Nếu cấu hình bằng tay trên giao diện web, bạn sẽ phải lặp lại hàng trăm cú click chuột. Với YAML:
+- Bạn chỉ cần viết 1 file chuẩn, sau đó **Copy & Paste** sang các service khác.
+- Nếu bạn chuyển sang một Repo mới, chỉ cần mang theo thư mục `.github` là toàn bộ thực thể CI/CD sẽ "sống lại" ngay lập tức mà không cần cấu hình lại từ đầu.
+
+### 5.5 Cách ly lỗi (Isolation) trong Microservices
+Trong dự án của chúng ta, mỗi service có một file `.yml` riêng:
+- Nếu bạn sửa lỗi cho `identity-service`, chỉ file `identity-service.yml` chạy. 
+- Điều này giúp hệ thống vận hành cực kỳ an toàn, không bao giờ có chuyện sửa service này làm hỏng pipeline của service kia.
+
+> [!IMPORTANT]
+> **Senior Insight**: Việc dùng file `.yml` giúp xóa bỏ khái niệm "Máy tôi chạy được nhưng máy build thì không". Vì mọi lệnh build đều được định nghĩa rõ ràng, minh bạch và ai cũng có thể đọc được ngay trong Repo.
+
+---
+
+## 6. Tại sao đây là mẫu thiết kế "Senior"?
 
 1.  **Fail-Fast**: Nếu bước `build-and-test` lỗi, pipeline sẽ dừng ngay lập tức, không cho phép đẩy code lỗi lên production.
 2.  **Idempotency**: Quy trình deploy được thiết kế để dù chạy lại nhiều lần cũng không gây lỗi hệ thống.
