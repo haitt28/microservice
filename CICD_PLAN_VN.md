@@ -126,15 +126,47 @@ jobs:
 
 ## 3. Các bước bạn cần chuẩn bị (Cấu hình một lần)
 
-Để kế hoạch này chạy được, bạn cần chuẩn bị 4 thứ sau trên GitHub:
+### 3.1 Lấy các giá trị này ở đâu? (Sources)
 
-1.  **DOCKERHUB_USERNAME / TOKEN**: Để Action được phép đẩy image lên account của bạn.
-2.  **SERVER_HOST / USER**: Địa chỉ IP và User của Server thật.
-3.  **SSH_PRIVATE_KEY**: Để GitHub có quyền "mở cửa" vào Server deploy mà không cần mật khẩu.
+Để điền vào GitHub Secrets, bạn cần chuẩn bị các thông tin sau:
+
+| Biến (Secret Name) | Lấy từ đâu? | Cách lấy |
+| :--- | :--- | :--- |
+| **DOCKERHUB_USERNAME** | Account Docker Hub | Chính là tên đăng nhập hoặc email bạn dùng cho `hub.docker.com`. |
+| **DOCKERHUB_TOKEN** | Docker Hub Settings | `Account Settings` -> `Security` -> `Personal Access Tokens` -> `Generate new token`. |
+| **SERVER_HOST** | Nhà cung cấp VPS | Địa chỉ IP Public của Server (ví dụ: `123.45.67.89`). |
+| **SERVER_USER** | Root hoặc User riêng | Thường là `root`, `ubuntu`, hoặc `centos`. |
+| **SSH_PRIVATE_KEY** | Máy cá nhân của bạn | Chạy lệnh `ssh-keygen` để tạo cặp khóa. Lấy nội dung file `id_rsa` (khóa bí mật). |
+
+### 3.2 Cách cấu hình trên GitHub (How to set)
+
+1. Truy cập Repo trên GitHub -> **Settings**.
+2. Tìm mục **Secrets and variables** -> **Actions**.
+3. Nhấn **New repository secret**.
+4. Nhập đúng **Name** (ví dụ: `DOCKERHUB_TOKEN`) và dán giá trị vào ô **Value**.
 
 ---
 
-## 4. Tại sao đây là mẫu thiết kế "Senior"?
+## 4. Quản lý Biến môi trường (Environment Variables)
+
+Khác với Secrets (thông tin nhạy cảm), các biến cấu hình thông thường được lấy từ 2 nguồn:
+
+### 4.1 Biến trong file Workflow (.yml)
+Dùng cho các thông tin cố định như tên image, port, hoặc profile:
+```yaml
+env:
+  SPRING_PROFILES_ACTIVE: prod
+  SERVICE_NAME: order-service
+```
+
+### 4.2 Biến trong file .env (Trên Server)
+Dùng cho các thông tin thay đổi theo môi trường (Staging/Prod). File này sẽ nằm sẵn trên Server trong thư mục dự án:
+- `docker-compose.yml` sẽ đọc file này thông qua lệnh `env_file: .env` hoặc tự động nhận diện nếu cùng thư mục.
+- **Lợi ích**: Bạn có thể sửa cấu hình database trực tiếp trên server mà không cần sửa code hay chạy lại CI/CD.
+
+---
+
+## 5. Tại sao đây là mẫu thiết kế "Senior"?
 
 1.  **Fail-Fast**: Nếu bước `build-and-test` lỗi, pipeline sẽ dừng ngay lập tức, không cho phép đẩy code lỗi lên production.
 2.  **Idempotency**: Quy trình deploy được thiết kế để dù chạy lại nhiều lần cũng không gây lỗi hệ thống.
