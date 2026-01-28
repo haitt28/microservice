@@ -127,14 +127,22 @@ curl -X POST http://localhost:8081/api/v1/orders `
 
 ---
 
-## Bước 6: Monitoring
+## Bước 7: Giải thích Hệ thống Giám sát (Observability Stack)
 
-Sau khi chạy đầy đủ:
-- **Keycloak Admin**: http://localhost:8080 (admin/admin)
-- **Kafka UI**: http://localhost:8090
-- **Prometheus**: http://localhost:9090
-- **Grafana**: http://localhost:3000 (admin/admin)
-- **Jaeger Tracing**: http://localhost:16686
+Hệ thống của chúng ta sử dụng bộ ba "quyền lực" để theo dõi sức khỏe của Microservices: **Prometheus**, **Grafana** và **Jaeger**.
+
+### 7.1 Prometheus (Bộ thu thập dữ liệu)
+- **Nó là gì?**: Một hệ cơ sở dữ liệu dạng chuỗi thời gian (Time-series Database).
+- **Nhiệm vụ**: Prometheus sẽ định kỳ "gõ cửa" (pull) từng microservice để lấy các chỉ số như: RAM đang dùng bao nhiêu? Có bao nhiêu request mỗi giây? Có bao nhiêu lỗi 500?
+- **Ví dụ**: Nếu `order-service` bị chậm, Prometheus sẽ ghi nhận lại biểu đồ thời gian mà nó bắt đầu chậm.
+
+### 7.2 Grafana (Bảng điều khiển trực quan)
+- **Nó là gì?**: Một công cụ vẽ biểu đồ chuyên nghiệp.
+- **Nhiệm vụ**: Grafana kết nối vào Prometheus để lấy dữ liệu thô và biến chúng thành các biểu đồ (Dashboard) đẹp mắt: hình tròn, hình cột, bản đồ nhiệt...
+- **Tại sao cần cả hai?**: Prometheus giống như một cuốn sổ ghi chép dữ liệu khô khan, còn Grafana là người nghệ sĩ vẽ lại cuốn sổ đó thành hình ảnh để Senior/Manager nhìn vào là hiểu ngay hệ thống đang ổn hay không.
+
+### 7.3 Jaeger (Truy vết phân tán - Distributed Tracing)
+- **Nhiệm vụ**: Giúp bạn theo dõi một Request đi từ App -> Gateway -> Order Service -> Payment Service. Nếu request bị lỗi ở giữa chừng, Jaeger sẽ chỉ chính xác nó bị lỗi ở service nào và tốn bao nhiêu mili giây ở mỗi bước.
 
 ---
 
